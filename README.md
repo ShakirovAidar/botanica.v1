@@ -1,33 +1,24 @@
-# 50Lemons — Next.js multi-page site
+# Botanica / 50Lemons — restored original booking app
 
-Перенесённая на Next.js версия с отдельными индексируемыми маршрутами:
+This restores the original `index.html` booking experience and its existing booking flow, styles, scripts, map tiles, images, and icons. Next.js remains the framework and Cloudflare OpenNext deployment scripts are included.
 
-- `/` — главная страница
-- `/projects` — каталог
-- `/projects/[slug]` — отдельная статическая SEO-страница каждого проекта
-- `/contact` — форма запроса
-- `/faq` — ответы на частые вопросы
-- `/sitemap.xml` и `/robots.txt` — генерируются Next.js
+## Key behavior
 
-## Запуск
+- `/` is internally rewritten to `/legacy.html`; the browser URL stays `/` (HTTP redirect is not used).
+- The original booking application is preserved as `public/legacy.html` with its relative assets under `public/assets/`.
+- No replacement booking UI or three-minute loading flow has been introduced.
+
+## Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-Для production:
+## Cloudflare
 
 ```bash
-npm run build
-npm start
+npm run deploy
 ```
 
-Укажите публичный домен в `NEXT_PUBLIC_SITE_URL` (например, `https://example.com`) до production-сборки. Сейчас в metadata по умолчанию стоит `https://50lemons.com` — замените его на реальный домен.
-
-## Важно перед публикацией
-
-- Контент страниц и SEO metadata рендерятся сервером, маршруты проекта предварительно генерируются статически.
-- Отправка формы пока демонстрационная: подключите API/CRM и реальную обработку согласия перед сбором заявок.
-- Информация о ценах ориентировочная; подтвердите значения и детали проектов перед публикацией.
-- Картинки исходного архива сохранены в `public/assets`.
+The Cloudflare Worker name is `botanica-v1`. If your existing production Worker uses another name, keep `name` in `wrangler.jsonc` aligned with that actual Worker. This configuration intentionally omits a self-service binding so first deployment does not fail when a self-referenced Worker does not yet exist.
