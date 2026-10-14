@@ -1,24 +1,59 @@
-# Botanica / 50Lemons — restored original booking app
+# 50Lemons — Fast Booking (Phuket Villas)
 
-This restores the original `index.html` booking experience and its existing booking flow, styles, scripts, map tiles, images, and icons. Next.js remains the framework and Cloudflare OpenNext deployment scripts are included.
+Одностраничное приложение заявки на подбор виллы на Пхукете.
 
-## Key behavior
+## Структура
 
-- `/` is internally rewritten to `/legacy.html`; the browser URL stays `/` (HTTP redirect is not used).
-- The original booking application is preserved as `public/legacy.html` with its relative assets under `public/assets/`.
-- No replacement booking UI or three-minute loading flow has been introduced.
-
-## Run
-
-```bash
-npm install
-npm run dev
+```
+index.html              — приложение
+assets/
+  icons/
+    favicon-32.png
+    apple-touch-icon.png
+    logo.png            — логотип (mask в nav)
+  img/
+    og-preview.jpg      — превью для соцсетей
+    wisdom.jpg          — фото проекта Wisdom
+  map/
+    1582-977.jpg …      — тайлы карты (Esri World Topo, z11)
 ```
 
-## Cloudflare
+## Запуск
+
+Откройте `index.html` в браузере или положите папку на любой статический хостинг
+(Nginx, Cloudflare Pages, Netlify, GitHub Pages и т.п.).
 
 ```bash
-npm run deploy
+# локально
+npx serve .
+# или
+python3 -m http.server 8080
 ```
 
-The Cloudflare Worker name is `botanica-v1`. If your existing production Worker uses another name, keep `name` in `wrangler.jsonc` aligned with that actual Worker. This configuration intentionally omits a self-service binding so first deployment does not fail when a self-referenced Worker does not yet exist.
+## Важно для шаринга (Open Graph)
+
+Соцсети (Telegram, Facebook, iMessage) **не** читают относительные пути к `og:image`.
+После деплоя укажите абсолютный URL:
+
+```html
+<meta property="og:image" content="https://YOUR-DOMAIN/assets/img/og-preview.jpg">
+<meta name="twitter:image" content="https://YOUR-DOMAIN/assets/img/og-preview.jpg">
+```
+
+## Карта
+
+Используются статические тайлы Esri (World Topographic Map), без API-ключа.
+Атрибуция указана на карте. Координаты проектов — приблизительные маркеры на Пхукете.
+
+## Юридический FAQ
+
+Текст про покупку иностранцем основан на:
+- Land Code (Таиланд)
+- Civil and Commercial Code §§ 538, 540 (аренда до 30 лет)
+- Condominium Act § 19 bis (квота 49%)
+
+Не является юридической консультацией.
+
+## Версия
+
+Release build — 14.10.2026
