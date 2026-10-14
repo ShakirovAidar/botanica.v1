@@ -1,16 +1,7 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  async rewrites() {
-    return {
-      beforeFiles: [
-        // Serve the original booking app at / without a browser redirect.
-        { source: "/", destination: "/legacy.html" }
-      ],
-      afterFiles: [],
-      fallback: []
-    };
-  }
-};
+// "/" is served as a static asset (public/index.html) by Cloudflare's assets layer,
+// so no rewrite is needed.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
