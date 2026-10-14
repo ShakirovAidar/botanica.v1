@@ -1,12 +1,12 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "botanica-v1",
-  "main": ".open-next/worker.js",
-  "compatibility_date": "2026-10-12",
-  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.js",
+  "upload_source_maps": true,
+
+  "compatibility_date": "2026-10-14",
   "assets": {
-    "directory": ".open-next/assets",
+    "directory": "./dist",
     "binding": "ASSETS"
-  },
-  "observability": { "enabled": true }
+  }
 }
