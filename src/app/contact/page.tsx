@@ -1,0 +1,3 @@
+import type {Metadata} from "next"; import ContactForm from "@/components/ContactForm";
+export const metadata:Metadata={title:"Запросить подбор недвижимости на Пхукете",description:"Оставьте заявку на персональный подбор недвижимости на Пхукете. Укажите бюджет, цель покупки и удобный способ связи.",alternates:{canonical:"/contact"},robots:{index:true,follow:true}};
+export default function Contact(){return <><section className="page-intro narrow"><p className="eyebrow">PERSONAL SELECTION</p><h1>Подберём недвижимость под ваши цели</h1><p>Укажите ориентировочный бюджет и удобный контакт. Мы свяжемся с вами, чтобы уточнить критерии поиска.</p></section><ContactForm/></>}

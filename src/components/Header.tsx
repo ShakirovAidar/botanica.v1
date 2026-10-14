@@ -1,0 +1,1 @@
+export default function Header(){return <header className="header"><a className="brand" href="/" aria-label="50Lemons — главная">🍋 <span>50Lemons</span></a><nav aria-label="Основная навигация"><a href="/projects">Проекты</a><a href="/faq">FAQ</a><a className="nav-cta" href="/contact">Подобрать объект</a></nav></header>}

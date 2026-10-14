@@ -1,71 +1,33 @@
-# 50Lemons — Fast Booking (Phuket Villas)
+# 50Lemons — Next.js multi-page site
 
-Одностраничное приложение заявки на подбор виллы на Пхукете.
+Перенесённая на Next.js версия с отдельными индексируемыми маршрутами:
 
-## Структура
-
-```
-index.html              — приложение
-assets/
-  icons/
-    favicon-32.png
-    apple-touch-icon.png
-    logo.png            — логотип (mask в nav)
-  img/
-    og-preview.jpg      — превью для соцсетей
-    wisdom.jpg          — фото проекта Wisdom
-  map/
-    1582-977.jpg …      — тайлы карты (Esri World Topo, z11)
-```
+- `/` — главная страница
+- `/projects` — каталог
+- `/projects/[slug]` — отдельная статическая SEO-страница каждого проекта
+- `/contact` — форма запроса
+- `/faq` — ответы на частые вопросы
+- `/sitemap.xml` и `/robots.txt` — генерируются Next.js
 
 ## Запуск
 
-Откройте `index.html` в браузере или положите папку на любой статический хостинг
-(Nginx, Cloudflare Pages, Netlify, GitHub Pages и т.п.).
+```bash
+npm install
+npm run dev
+```
+
+Для production:
 
 ```bash
-# локально
-npx serve .
-# или
-python3 -m http.server 8080
+npm run build
+npm start
 ```
 
-## Адреса страниц
+Укажите публичный домен в `NEXT_PUBLIC_SITE_URL` (например, `https://example.com`) до production-сборки. Сейчас в metadata по умолчанию стоит `https://50lemons.com` — замените его на реальный домен.
 
-| Шаг | URL |
-|-----|-----|
-| Бюджет | `/` |
-| Карта | `/maps` |
-| Контакт | `/contact-us` |
+## Важно перед публикацией
 
-Роутинг через History API. Приложение нужно открывать с корня домена (`<base href="/">`).
-Для прямых заходов на `/maps` и `/contact-us` есть папки `maps/` и `contact-us/` (копии `index.html`),
-`_redirects` (Netlify / Cloudflare Pages) и `nginx.conf.example`. При изменении `index.html` копии обновите.
-
-## Важно для шаринга (Open Graph)
-
-Соцсети (Telegram, Facebook, iMessage) **не** читают относительные пути к `og:image`.
-После деплоя укажите абсолютный URL:
-
-```html
-<meta property="og:image" content="https://YOUR-DOMAIN/assets/img/og-preview.jpg">
-<meta name="twitter:image" content="https://YOUR-DOMAIN/assets/img/og-preview.jpg">
-```
-
-## Карта
-
-Используются статические тайлы Esri (World Topographic Map), без API-ключа.
-Атрибуция указана на карте. Координаты проектов — приблизительные маркеры на Пхукете.
-
-## Юридический FAQ
-
-Текст про покупку иностранцем основан на:
-- Land Code (Таиланд)
-- Civil and Commercial Code §§ 538, 540 (аренда до 30 лет)
-- Condominium Act § 19 bis (квота 49%)
-
-Не является юридической консультацией.
-
-## Версия
-
-Release build — 14.10.2026
+- Контент страниц и SEO metadata рендерятся сервером, маршруты проекта предварительно генерируются статически.
+- Отправка формы пока демонстрационная: подключите API/CRM и реальную обработку согласия перед сбором заявок.
+- Информация о ценах ориентировочная; подтвердите значения и детали проектов перед публикацией.
+- Картинки исходного архива сохранены в `public/assets`.
