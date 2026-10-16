@@ -2,109 +2,14 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const PROJECTS = [
-    { id: "skyport", name: "Skyport", price: 19.9, lat: 8.1135, lng: 98.3169 },
-    {
-      id: "sky-valley",
-      name: "Sky Valley",
-      price: 73,
-      lat: 7.9982,
-      lng: 98.2915,
-    },
-    {
-      id: "wisdom",
-      name: "Wisdom",
-      price: 15.9,
-      lat: 8.0285,
-      lng: 98.348,
-      image: "assets/figma/f9474.png",
-      description: "650 m to UWC International School",
-    },
-    {
-      id: "forestique",
-      name: "Forestique",
-      price: 44.1,
-      lat: 8.0045,
-      lng: 98.305,
-    },
-    {
-      id: "pru-jampa",
-      name: "Pru Jampa",
-      price: 19.5,
-      lat: 8.052,
-      lng: 98.338,
-    },
-    {
-      id: "grand-avenue",
-      name: "Grand Avenue",
-      price: 49,
-      lat: 8.012,
-      lng: 98.312,
-    },
-    {
-      id: "the-verdant",
-      name: "The Verdant",
-      price: 15.9,
-      lat: 8.0005,
-      lng: 98.2985,
-    },
-    {
-      id: "green-boulevard",
-      name: "Green Boulevard",
-      price: 26.9,
-      lat: 7.992,
-      lng: 98.294,
-    },
-    {
-      id: "four-seasons",
-      name: "Four Seasons",
-      price: 24.1,
-      lat: 7.981,
-      lng: 98.289,
-    },
-    { id: "lakeside", name: "Lakeside", price: 27.9, lat: 7.9865, lng: 98.301 },
-    {
-      id: "kamala-ocean",
-      name: "Kamala Ocean",
-      price: 126,
-      lat: 7.955,
-      lng: 98.282,
-    },
-    { id: "majestia", name: "Majestia", price: 28.8, lat: 7.89, lng: 98.325 },
-    {
-      id: "modern-sea-karon",
-      name: "Modern Sea Karon",
-      price: 52.4,
-      lat: 7.841,
-      lng: 98.294,
-    },
-    { id: "louvre", name: "Louvre", price: 19.9, lat: 7.848, lng: 98.342 },
-    {
-      id: "chalong-bay",
-      name: "Chalong Bay",
-      price: 33,
-      lat: 7.8305,
-      lng: 98.3455,
-    },
-    {
-      id: "grand-sea-through",
-      name: "Grand Sea Through",
-      price: 28.8,
-      lat: 7.822,
-      lng: 98.332,
-    },
+  const PROJECTS = window.BOTANICA_PROJECTS;
+  const budgets = () => [
+    {id:"all",label:"Browse All Projects"},
+    {id:"entry",min:14.9,max:30,label:"THB 14.9M–30M"},
+    {id:"mid",min:30,max:70,label:"THB 30M–70M"},
+    {id:"premium",min:70,max:250,label:"THB 70M–250M"},
+    {id:"unknown",label:"Price on request"}
   ];
-  const budgets = (theme) =>
-    theme === "dark"
-      ? [
-          { id: "entry", min: 14.9, max: 30 },
-          { id: "mid", min: 30, max: 70 },
-          { id: "premium", min: 70, max: 250 },
-        ]
-      : [
-          { id: "entry", min: 14.9, max: 30 },
-          { id: "all-premium", min: 30, max: 250 },
-        ];
   const channels = ["Telegram", "WhatsApp", "Instagram", "Facebook"];
   const channelKeys = [
     "imgIconTelegram",
@@ -136,44 +41,30 @@
         ? "dark"
         : "light",
     screen: "home",
-    budget: null,
+    budget: {id:"all",label:"Browse All Projects"},
     project: null,
     channel: "Telegram",
     contacts: {},
-    list: [],
+    list: PROJECTS.slice(),
     sheet: false,
     slide: 0,
     request: null,
   };
   const assets = () => window.FIGMA_ASSETS[state.theme];
-  const price = (n) => `From THB ${n}M`;
-  const budgetLabel = (b) => `THB ${b.min}M – ${b.max}M`;
-  const inBudget = (b) =>
-    PROJECTS.filter((p) => p.price >= b.min && p.price <= b.max).sort(
-      (a, b) => a.price - b.price,
-    );
+  const price = (n) => n == null ? "Price on request" : `From THB ${n}M`;
+  const budgetLabel = (b) => b?.label || "Browse All Projects";
+  const inBudget = (b) => PROJECTS.filter(p => b.id === "all" || (b.id === "unknown" ? p.price == null : p.price != null && p.price >= b.min && (b.id === "premium" ? p.price <= b.max : p.price < b.max)));
   const img = (src, w = 18, h = w) =>
     `<img src="${src}" alt="" width="${w}" height="${h}">`;
   const arrow = '<span class="button-arrow" aria-hidden="true"></span>';
   const reducedMotion = () =>
     matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function projectKind(p) {
-    const prices = state.list.map((x) => x.price),
-      min = Math.min(...prices),
-      max = Math.max(...prices);
-    return min === max
-      ? ""
-      : p.price === min
-        ? "best"
-        : p.price === max
-          ? "premium"
-          : "";
-  }
+  function projectKind(p) { return ""; }
   function renderBudgets() {
     $("budgets").innerHTML = budgets(state.theme)
       .map(
         (b, i) =>
-          `<button class="budget-option" type="button" data-budget="${b.id}" aria-pressed="${state.budget?.id === b.id}"><span class="budget-icon">${img(i === 0 ? assets().budget.imgIconPalmtree : assets().budget.imgIconPalmtree1)}</span><span class="budget-copy"><strong>${budgetLabel(b)}</strong><small>${inBudget(b).length} projects on the map</small></span><span class="budget-arrow">${img(assets().budget.imgIconArrowRight, 16)}</span></button>`,
+          `<button class="budget-option" type="button" data-budget="${b.id}" aria-pressed="${state.budget?.id === b.id}" ${inBudget(b).length ? "" : "disabled"}><span class="budget-icon">${img(i === 0 ? assets().budget.imgIconPalmtree : assets().budget.imgIconPalmtree1)}</span><span class="budget-copy"><strong>${budgetLabel(b)}</strong><small>${inBudget(b).length} projects on the map</small></span><span class="budget-arrow">${img(assets().budget.imgIconArrowRight, 16)}</span></button>`,
       )
       .join("");
   }
@@ -243,11 +134,8 @@
     $("sheet").hidden = true;
     $("sheet").inert = true;
     $("footer").inert = false;
-    $("map-viewport").removeAttribute("aria-hidden");
-    if (restore)
-      document
-        .querySelector(`.map-pin[data-project="${state.project?.id}"]`)
-        ?.focus({ preventScroll: true });
+
+
   }
   function go(screen, { focus = true } = {}) {
     if (
@@ -278,30 +166,35 @@
   }
   function renderMap() {
     $("map-empty").hidden = state.list.length !== 0;
-    $("markers").innerHTML = state.list
-      .map((p, i) => {
-        // The Figma basemap and its crop are retained; positions use the existing
-        // catalogue coordinates projected to the same Phuket viewport.
-        const x = ((157.5 + (p.lng - 98.3169) * 970) / 375) * 100;
-        const y = ((326.5 + (8.1135 - p.lat) * 1008) / 812) * 100;
-        return `<button type="button" class="map-pin ${projectKind(p)}" data-project="${p.id}" style="left:${x}%;top:${y}%" aria-label="${p.name}, ${price(p.price)}" aria-pressed="${p.id === state.project?.id}">${i + 1}<span class="map-tooltip" aria-hidden="true"><strong>${p.name}</strong><small>${price(p.price)}</small></span></button>`;
-      })
-      .join("");
+    const p = state.project;
+    const iframe = $("google-map");
+    const fallback = $("map-location-fallback");
+    const link = $("open-google-maps");
+    if (p?.mapEmbed && p?.mapShare) {
+      iframe.hidden = false;
+      iframe.src = p.mapEmbed;
+      fallback.hidden = true;
+      link.hidden = false;
+      link.href = p.mapShare;
+    } else {
+      iframe.hidden = true;
+      iframe.removeAttribute("src");
+      fallback.hidden = false;
+      fallback.textContent = p ? `${p.name} — Location to be confirmed` : "Select a project to view its location";
+      link.hidden = true;
+      link.removeAttribute("href");
+    }
   }
   let cardScrollTimer,
     scrollLocked = false;
   function renderCards() {
     $("cards").innerHTML = state.list
       .map((p) => {
-        const kind = projectKind(p);
-        const badge = kind
-          ? `<span class="project-badge">${img(assets().cards.imgIconTag, 12)}${kind === "best" ? "Best Price" : "Premium"}</span>`
-          : "";
+        const badge = p.paymentPlan ? '<span class="project-badge">70/30 payment plan</span>' : '';
         const media = p.image
-          ? `<img class="project-photo" src="${p.image}" alt="${p.name} villa"><button class="photo-button" type="button" data-photo="${p.id}" aria-label="Enlarge ${p.name} photo"></button>`
-          : `<span class="photo-soon">${img(assets().cards.imgIconCamera, 14)}Photo coming soon</span>`;
-        const copy = p.description || price(p.price);
-        return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">${media}${badge}<div class="project-content"><h3>${p.name}</h3><p>${copy}</p><button class="button primary" type="button" data-reserve="${p.id}"><span>Reserve from THB ${p.price}M</span>${arrow}</button></div></article>`;
+          ? `<img class="project-photo" src="${p.image}" alt="${p.name}"><button class="photo-button" type="button" data-photo="${p.id}" aria-label="Enlarge ${p.name} photo"></button>`
+          : `<span class="photo-soon">Photo coming soon</span>`;
+        return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">${media}${badge}<div class="project-content"><h3>${p.name}</h3><p class="project-subtitle">${p.subtitle}</p>${p.details ? `<details class="project-details"><summary>Project details</summary><p>${p.details}</p></details>` : ''}<button class="project-select" type="button" data-select="${p.id}" aria-pressed="${state.project?.id === p.id}">View on map</button><button class="button primary" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request Pricing" : price(p.price)}</span>${arrow}</button></div></article>`;
       })
       .join("");
   }
@@ -309,12 +202,9 @@
     const p = state.list.find((p) => p.id === id);
     if (!p) return;
     state.project = p;
-    document
-      .querySelectorAll(".map-pin")
-      .forEach((b) => b.setAttribute("aria-pressed", b.dataset.project === id));
-    document
-      .querySelectorAll("[data-card]")
-      .forEach((c) => c.classList.toggle("selected", c.dataset.card === id));
+    document.querySelectorAll("[data-card]").forEach(c => c.classList.toggle("selected", c.dataset.card === id));
+    document.querySelectorAll("[data-select]").forEach(b => b.setAttribute("aria-pressed", b.dataset.select === id));
+    renderMap();
     renderNavigation();
     if (open) {
       state.sheet = true;
@@ -334,15 +224,10 @@
     state.budget = budgets(state.theme).find((b) => b.id === id);
     if (!state.budget) return;
     state.list = inBudget(state.budget);
-    state.project =
-      state.list.find((p) => p.id === state.project?.id) ||
-      state.list.find((p) => p.id === "wisdom") ||
-      state.list[0] ||
-      null;
+    state.project = state.list.find((p) => p.id === state.project?.id) || null;
     renderBudgets();
     renderMap();
     renderCards();
-    resetMap();
     go("map");
   }
   function renderChannels() {
@@ -389,7 +274,7 @@
     const stats = [
       ["22 Years", "of experience"],
       ["No. 1", "Villa Developer"],
-      ["31+", "projects"],
+      [String(PROJECTS.length), "projects"],
     ];
     $("stats").innerHTML = stats
       .map(([a, b]) => `<div><strong>${a}</strong><small>${b}</small></div>`)
@@ -398,16 +283,9 @@
       "I agree to the processing of personal data";
     if (state.budget) {
       const available = budgets(theme);
-      state.budget =
-        available.find((b) => b.id === state.budget.id) ||
-        available.find(
-          (b) =>
-            state.project &&
-            state.project.price >= b.min &&
-            state.project.price <= b.max,
-        ) ||
-        available[0];
+      state.budget = available.find(b => b.id === state.budget.id) || available[0];
       state.list = inBudget(state.budget);
+      if (!state.list.some(p => p.id === state.project?.id)) state.project = state.list[0] || null;
       renderMap();
       renderCards();
     }
@@ -458,6 +336,8 @@
       selectProject(reserve.dataset.reserve, false);
       go("contact");
     }
+    const selection = e.target.closest("[data-select]");
+    if (selection) selectProject(selection.dataset.select, false);
     if (photo) {
       const p = state.list.find((p) => p.id === photo.dataset.photo);
       openPhoto(p);
@@ -477,107 +357,7 @@
       if (nearest) selectProject(nearest.dataset.card, false);
     }, 120);
   });
-  const camera = { x: 0, y: 0, zoom: 1 },
-    pointers = new Map();
-  let gesture = null,
-    moved = false;
-  function drawMap() {
-    const bounds = $("map-viewport").getBoundingClientRect();
-    const limitX = bounds.width * ((camera.zoom - 1) / 2 + 0.145 * camera.zoom);
-    const limitY =
-      bounds.height * ((camera.zoom - 1) / 2 + 0.053 * camera.zoom);
-    camera.x = Math.max(-limitX, Math.min(limitX, camera.x));
-    camera.y = Math.max(-limitY, Math.min(limitY, camera.y));
-    $("map-canvas").style.transform =
-      `translate(${camera.x}px,${camera.y}px) scale(${camera.zoom})`;
-  }
-  function resetMap() {
-    camera.x = 0;
-    camera.y = 0;
-    camera.zoom = 1;
-    drawMap();
-  }
-  function zoomMap(factor) {
-    camera.zoom = Math.max(1, Math.min(3, camera.zoom * factor));
-    drawMap();
-  }
-  $("zoom-in").addEventListener("click", () => zoomMap(1.2));
-  $("zoom-out").addEventListener("click", () => zoomMap(1 / 1.2));
-  $("map-reset").addEventListener("click", resetMap);
-  const viewport = $("map-viewport");
-  viewport.addEventListener("pointerdown", (e) => {
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.size === 1) moved = false;
-    gesture = null;
-    viewport.setPointerCapture(e.pointerId);
-  });
-  viewport.addEventListener("pointermove", (e) => {
-    if (!pointers.has(e.pointerId)) return;
-    const prev = pointers.get(e.pointerId);
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.size === 2) {
-      const [a, b] = [...pointers.values()],
-        distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (gesture)
-        camera.zoom = Math.max(
-          1,
-          Math.min(3, (gesture.zoom * distance) / gesture.distance),
-        );
-      else gesture = { zoom: camera.zoom, distance };
-      moved = true;
-    } else if (Math.hypot(e.clientX - prev.x, e.clientY - prev.y) > 1) {
-      camera.x += e.clientX - prev.x;
-      camera.y += e.clientY - prev.y;
-      moved = true;
-    }
-    drawMap();
-  });
-  viewport.addEventListener("pointerup", (e) => {
-    if (!moved) {
-      const pin = document
-        .elementFromPoint(e.clientX, e.clientY)
-        ?.closest("[data-project]");
-      if (pin) selectProject(pin.dataset.project);
-    }
-    pointers.delete(e.pointerId);
-    gesture = null;
-  });
-  viewport.addEventListener("pointercancel", (e) => {
-    pointers.delete(e.pointerId);
-    gesture = null;
-  });
-  viewport.addEventListener("click", (e) => {
-    if (e.detail === 0) {
-      const pin = e.target.closest("[data-project]");
-      if (pin) selectProject(pin.dataset.project);
-    }
-  });
-  viewport.addEventListener(
-    "wheel",
-    (e) => {
-      e.preventDefault();
-      zoomMap(Math.exp(-e.deltaY * 0.001));
-    },
-    { passive: false },
-  );
-  viewport.tabIndex = 0;
-  viewport.addEventListener("keydown", (e) => {
-    if (e.target !== viewport) return;
-    const moves = {
-      ArrowLeft: [30, 0],
-      ArrowRight: [-30, 0],
-      ArrowUp: [0, 30],
-      ArrowDown: [0, -30],
-    };
-    if (moves[e.key]) {
-      e.preventDefault();
-      camera.x += moves[e.key][0];
-      camera.y += moves[e.key][1];
-      drawMap();
-    }
-    if (e.key === "+") zoomMap(1.2);
-    if (e.key === "-") zoomMap(1 / 1.2);
-  });
+  // Google Maps uses its own built-in controls.
   // The prototype prepares a payload; enable fetch('/api/order', ...) only once
   // an actual backend exists. Never display a false "sent" confirmation.
   $("contact-form").addEventListener("submit", (e) => {
@@ -607,6 +387,8 @@
       budget: budgetLabel(state.budget),
       project: state.project.name,
       price: price(state.project.price),
+      projectId: state.project.id,
+      subtitle: state.project.subtitle,
       channel: state.channel,
       contact: contactValue,
       language: "en",
@@ -652,10 +434,10 @@
     }
   });
   $("restart").addEventListener("click", () => {
-    state.budget = null;
+    state.budget = budgets()[0];
     state.project = null;
     state.request = null;
-    state.list = [];
+    state.list = PROJECTS.slice();
     state.contacts = {};
     state.channel = "Telegram";
     $("contact-form").reset();

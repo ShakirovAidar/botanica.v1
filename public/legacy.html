@@ -23,6 +23,7 @@
     <link rel="apple-touch-icon" href="assets/icons/botanica-touch.png" />
     <link rel="stylesheet" href="assets/app.css" />
     <script src="assets/figma-assets.js" defer></script>
+    <script src="assets/projects.js" defer></script>
     <script src="assets/app.js" defer></script>
   </head>
   <body>
@@ -473,63 +474,11 @@
           <div id="faq" class="faq"></div>
         </section>
         <section id="map" class="map-screen" aria-labelledby="map-title" hidden>
-          <div
-            id="map-viewport"
-            class="map-viewport"
-            role="group"
-            aria-label="Villa projects in Phuket"
-          >
-            <div id="map-canvas">
-              <img
-                class="map-image"
-                src="assets/figma/97ec0.png"
-                alt=""
-                draggable="false"
-              />
-              <div class="map-tint"></div>
-              <div id="markers"></div>
-            </div>
+          <div id="map-viewport" class="map-viewport" role="region" aria-label="Google Maps project location">
+            <iframe id="google-map" title="Selected project on Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen hidden></iframe>
+            <p id="map-location-fallback" class="map-location-fallback">Location to be confirmed</p>
           </div>
-          <div class="map-title glass">
-            <h1 id="map-title">Select a Project on the Map</h1>
-            <p class="subtitle">Tap a marker to view project cards.</p>
-            <div class="legend">
-              <span><i class="project-dot"></i>Projects</span
-              ><span><i class="best-dot"></i>Best Value</span
-              ><span><i class="premium-dot"></i>Premium</span>
-            </div>
-          </div>
-          <div class="map-tools">
-            <button
-              id="zoom-in"
-              class="icon-button"
-              type="button"
-              aria-label="Zoom in"
-            >
-              +</button
-            ><button
-              id="zoom-out"
-              class="icon-button"
-              type="button"
-              aria-label="Zoom out"
-            >
-              −</button
-            ><button
-              id="map-reset"
-              class="icon-button"
-              type="button"
-              aria-label="Reset map view"
-            >
-              ⌖
-            </button>
-          </div>
-          <a
-            class="map-attribution"
-            href="https://www.esri.com/en-us/legal/terms/data-attributions"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Esri, HERE, Garmin, USGS</a
-          >
+          <div class="map-title glass"><h1 id="map-title">Explore Botanica Projects</h1><p class="subtitle">Choose a project card to view its location.</p><a id="open-google-maps" href="#" target="_blank" rel="noopener noreferrer" hidden>Open in Google Maps ↗</a></div>
           <p id="map-empty" class="map-empty glass" hidden>
             No projects in this range yet. Please choose another budget.
           </p>
