@@ -23,7 +23,7 @@
     Instagram: "@username",
     Facebook: "Profile link or name",
   };
-  const slides = ["23d80.png", "a7387.webp", "31222.png", "f9474.png"];
+  const slides = ["23d80.png", "a7387.png", "31222.png", "f9474.png"];
   const readTheme = () => {
     try {
       return localStorage.getItem("50lemons-theme");
@@ -153,6 +153,15 @@
     $("submit").hidden = screen !== "contact";
     $("back").hidden = ["home", "success"].includes(screen);
     renderNavigation();
+    if (screen === "map") {
+      // Cards remain visible even without a verified map location.
+      $("sheet").hidden = false;
+      $("sheet").inert = false;
+      $("footer").inert = false;
+      state.sheet = true;
+      renderCards();
+      renderMap();
+    }
     if (screen === "contact") {
       renderRecap();
       renderChannels();
@@ -210,10 +219,10 @@
       state.sheet = true;
       $("sheet").hidden = false;
       $("sheet").inert = false;
-      $("footer").inert = true;
+      $("footer").inert = false;
       const card = document.querySelector(`[data-card="${id}"]`);
       scrollLocked = true;
-      $("cards").scrollLeft = card.offsetLeft - 16;
+      if (card) $("cards").scrollLeft = card.offsetLeft - 16;
       requestAnimationFrame(() => {
         scrollLocked = false;
       });
@@ -224,7 +233,7 @@
     state.budget = budgets(state.theme).find((b) => b.id === id);
     if (!state.budget) return;
     state.list = inBudget(state.budget);
-    state.project = state.list.find((p) => p.id === state.project?.id) || null;
+    state.project = state.list.find((p) => p.id === state.project?.id) || state.list[0] || null;
     renderBudgets();
     renderMap();
     renderCards();
@@ -347,15 +356,13 @@
     if (scrollLocked) return;
     clearTimeout(cardScrollTimer);
     cardScrollTimer = setTimeout(() => {
-      if (!state.sheet) return;
-      const cards = $("cards").children;
-      const scrollLeft = $("cards").scrollLeft;
-      let nearest = null;
-      let minDistance = Infinity;
-      for (const card of cards) {
-        const distance = Math.abs(card.offsetLeft - 16 - scrollLeft);
-        if (distance < minDistance) { minDistance = distance; nearest = card; }
-      }
+      if (!state.sheet || state.screen !== "map") return;
+      const cards = [...$("cards").children];
+      const nearest = cards.sort(
+        (a, b) =>
+          Math.abs(a.offsetLeft - 16 - $("cards").scrollLeft) -
+          Math.abs(b.offsetLeft - 16 - $("cards").scrollLeft),
+      )[0];
       if (nearest) selectProject(nearest.dataset.card, false);
     }, 120);
   });
@@ -456,7 +463,7 @@
   gallery.innerHTML = slides
     .map(
       (file, i) =>
-        `<img src="assets/figma/${file}" alt="Phuket villa view ${i + 1}" decoding="async" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} draggable="false">`,
+        `<img src="assets/figma/${file}" alt="Phuket villa view ${i + 1}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} draggable="false">`,
     )
     .join("");
   dots.innerHTML = slides
