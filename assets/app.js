@@ -4,11 +4,9 @@
   const $ = (id) => document.getElementById(id);
   const PROJECTS = window.BOTANICA_PROJECTS;
   const budgets = () => [
-    {id:"all",label:"Browse All Projects"},
     {id:"entry",min:14.9,max:30,label:"THB 14.9M–30M"},
     {id:"mid",min:30,max:70,label:"THB 30M–70M"},
-    {id:"premium",min:70,max:250,label:"THB 70M–250M"},
-    {id:"unknown",label:"Price on request"}
+    {id:"premium",min:70,max:250,label:"THB 70M–250M"}
   ];
   const channels = ["Telegram", "WhatsApp", "Instagram", "Facebook"];
   const channelKeys = [
@@ -61,7 +59,7 @@
     matchMedia("(prefers-reduced-motion: reduce)").matches;
   function projectKind(p) { return ""; }
   function renderBudgets() {
-    $("budgets").innerHTML = budgets(state.theme)
+    $("budgets").innerHTML = budgets()
       .map(
         (b, i) =>
           `<button class="budget-option" type="button" data-budget="${b.id}" aria-pressed="${state.budget?.id === b.id}" ${inBudget(b).length ? "" : "disabled"}><span class="budget-icon">${img(i === 0 ? assets().budget.imgIconPalmtree : assets().budget.imgIconPalmtree1)}</span><span class="budget-copy"><strong>${budgetLabel(b)}</strong><small>${inBudget(b).length} projects on the map</small></span><span class="budget-arrow">${img(assets().budget.imgIconArrowRight, 16)}</span></button>`,
@@ -179,20 +177,18 @@
     const iframe = $("google-map");
     const fallback = $("map-location-fallback");
     const link = $("open-google-maps");
-    if (p?.mapEmbed && p?.mapShare) {
-      iframe.hidden = false;
-      if (iframe.getAttribute("src") !== p.mapEmbed) iframe.src = p.mapEmbed;
-      fallback.hidden = true;
-      link.hidden = false;
-      link.href = p.mapShare;
-    } else {
-      iframe.hidden = true;
-      if (iframe.hasAttribute("src")) iframe.removeAttribute("src");
-      fallback.hidden = false;
-      fallback.textContent = p ? `${p.name} — Location to be confirmed` : "Select a project to view its location";
-      link.hidden = true;
-      link.removeAttribute("href");
-    }
+    // Search embeds work without a Google Maps API key. Search results are NOT verified locations.
+    const query = p ? `${p.name}, Phuket, Thailand` : 'Phuket, Thailand';
+    const embed = p?.mapEmbed || `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=12&output=embed`;
+    const share = p?.mapShare || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    iframe.hidden = false;
+    if (iframe.getAttribute('src') !== embed) iframe.setAttribute('src', embed);
+    fallback.hidden = false;
+    fallback.textContent = p ? 'Map search preview — exact project location not verified' : 'Phuket overview — select a project below';
+    link.hidden = false;
+    link.href = share;
+    link.textContent = p ? 'Search this project in Google Maps ↗' : 'Open Phuket in Google Maps ↗';
+
   }
   let cardScrollTimer,
     scrollLocked = false;
@@ -230,8 +226,8 @@
     }
   }
   function selectBudget(id) {
-    state.budget = budgets(state.theme).find((b) => b.id === id);
-    if (!state.budget) return;
+    state.budget = budgets().find((b) => b.id === id);
+    if (!state.budget || !inBudget(state.budget).length) return;
     state.list = inBudget(state.budget);
     state.project = state.list.find((p) => p.id === state.project?.id) || state.list[0] || null;
     renderBudgets();
@@ -291,8 +287,8 @@
     $("consent-copy").textContent =
       "I agree to the processing of personal data";
     if (state.budget) {
-      const available = budgets(theme);
-      state.budget = available.find(b => b.id === state.budget.id) || available[0];
+      const available = budgets();
+      state.budget = available.find(b => b.id === state.budget.id) || {id:"all",label:"Browse All Projects"};
       state.list = inBudget(state.budget);
       if (!state.list.some(p => p.id === state.project?.id)) state.project = state.list[0] || null;
       renderMap();
@@ -358,11 +354,7 @@
     cardScrollTimer = setTimeout(() => {
       if (!state.sheet || state.screen !== "map") return;
       const cards = [...$("cards").children];
-      const nearest = cards.sort(
-        (a, b) =>
-          Math.abs(a.offsetLeft - 16 - $("cards").scrollLeft) -
-          Math.abs(b.offsetLeft - 16 - $("cards").scrollLeft),
-      )[0];
+      const nearest = cards.find(c => c.getBoundingClientRect().left >= 0) || cards[0];
       if (nearest) selectProject(nearest.dataset.card, false);
     }, 120);
   });
@@ -443,7 +435,7 @@
     }
   });
   $("restart").addEventListener("click", () => {
-    state.budget = budgets()[0];
+    state.budget = {id:"all",label:"Browse All Projects"};
     state.project = null;
     state.request = null;
     state.list = PROJECTS.slice();

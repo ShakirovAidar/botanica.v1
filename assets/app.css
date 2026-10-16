@@ -1375,3 +1375,16 @@ dialog::backdrop {
 #sheet .project-card { background:linear-gradient(130deg,#31536c,#0b263e); }
 #sheet .sheet-header { margin-bottom:8px; }
 @media(max-width:640px) {#map-viewport{bottom:305px} #sheet:not([hidden]){max-height:270px;bottom:calc(83px + env(safe-area-inset-bottom, 0px))} #sheet .project-card{height:208px;} #map .map-title{top:calc(95px + env(safe-area-inset-top, 0px));}}
+
+/* 2026 map simplification: native Google map, no fake location markers. */
+#map-viewport {touch-action:auto!important;background:#e8edf0!important;}
+#google-map {position:absolute;inset:0;width:100%;height:100%;border:0;}
+#map-location-fallback:not([hidden]) {position:absolute;inset:auto 12px 10px!important;min-height:0!important;width:calc(100% - 24px);padding:7px 10px!important;border-radius:10px;background:rgba(255,255,255,.94)!important;color:#23364a!important;font-size:11px!important;pointer-events:none;z-index:2;}
+#map .map-title {pointer-events:auto;z-index:3;}
+#map .map-title h1 {pointer-events:none;}
+#map .map-title .subtitle {font-size:12px;line-height:1.35;}
+#open-google-maps {font-size:12px;display:inline-block;padding:5px 0;pointer-events:auto;}
+#sheet:not([hidden]) {z-index:4;}
+#sheet .project-content {background:rgba(10,31,50,.93);color:white;}
+#sheet .project-content h3,#sheet .project-content p {color:white;}
+#sheet .project-card {scroll-snap-align:start;}
