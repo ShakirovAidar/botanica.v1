@@ -1,59 +1,35 @@
-# 50Lemons — Fast Booking (Phuket Villas)
+# 50Lemons — Phuket Villa Selection
 
-Одностраничное приложение заявки на подбор виллы на Пхукете.
+English-only static booking prototype with light and dark modes implemented from the supplied Figma frames.
 
-## Структура
+## Run the actual prototype
 
-```
-index.html              — приложение
-assets/
-  icons/
-    favicon-32.png
-    apple-touch-icon.png
-    logo.png            — логотип (mask в nav)
-  img/
-    og-preview.jpg      — превью для соцсетей
-    wisdom.jpg          — фото проекта Wisdom
-  map/
-    1582-977.jpg …      — тайлы карты (Esri World Topo, z11)
+```sh
+npm run dev:prototype
 ```
 
-## Запуск
+Open http://127.0.0.1:8080. This command needs only Node.js; it does not depend on Next.js. You can also open `index.html` directly. Use `?theme=light` or `?theme=dark` to preview a specific mode. The theme button saves your preference locally.
 
-Откройте `index.html` в браузере или положите папку на любой статический хостинг
-(Nginx, Cloudflare Pages, Netlify, GitHub Pages и т.п.).
+## Source files
 
-```bash
-# локально
-npx serve .
-# или
-python3 -m http.server 8080
+- `index.html`: canonical static entry point.
+- `assets/app.css`, `assets/app.js`: shared themed components and interactive flow.
+- `assets/figma-assets.js`, `assets/figma/`: local original design assets.
+- `assets/fonts/`: bundled Involve fonts and their license.
+- `public/index.html`, `public/legacy.html`, `public/assets/`: synchronised static hosting copies.
+
+After editing the prototype, run:
+
+```sh
+npm run prototype:sync
 ```
 
-## Важно для шаринга (Open Graph)
+The existing Next.js wrapper is separate. `npm run build` builds that wrapper after `npm install`; `npm run dev` starts its placeholder route, not the static prototype. Cloudflare configuration serves `public/index.html` as an asset at the root.
 
-Соцсети (Telegram, Facebook, iMessage) **не** читают относительные пути к `og:image`.
-После деплоя укажите абсолютный URL:
+## Behaviour and limits
 
-```html
-<meta property="og:image" content="https://YOUR-DOMAIN/assets/img/og-preview.jpg">
-<meta name="twitter:image" content="https://YOUR-DOMAIN/assets/img/og-preview.jpg">
-```
+The app includes a swipeable photo hero, budget filtering, project map with drag/zoom, project carousel, photo lightbox, messenger selection, consent validation and a prepared-request summary. It retains the original 16-project catalogue; map locations and prices are prototype data.
 
-## Карта
+No backend is configured. Submission prepares an unsent request that can be copied; it does not send personal data anywhere. A real `/api/order` integration is a separate task.
 
-Используются статические тайлы Esri (World Topographic Map), без API-ключа.
-Атрибуция указана на карте. Координаты проектов — приблизительные маркеры на Пхукете.
-
-## Юридический FAQ
-
-Текст про покупку иностранцем основан на:
-- Land Code (Таиланд)
-- Civil and Commercial Code §§ 538, 540 (аренда до 30 лет)
-- Condominium Act § 19 bis (квота 49%)
-
-Не является юридической консультацией.
-
-## Версия
-
-Release build — 14.10.2026
+See [DESIGN-IMPLEMENTATION.md](DESIGN-IMPLEMENTATION.md) for exact source frames, deliberate adaptations and the remaining Figma Starter limit affecting independent verification of the dark confirmation screen.
