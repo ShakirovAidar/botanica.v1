@@ -581,17 +581,17 @@
         hidden
         inert
       >
-        <div class="sheet-handle"></div>
+        <div id="sheet-handle" class="sheet-handle" role="button" tabindex="0" aria-label="Drag to expand or collapse"></div>
         <div class="sheet-header">
-          <h2 id="sheet-title">Explore Projects</h2>
+          <h2 id="sheet-title">Explore Projects</h2><div class="sheet-controls"><button id="sheet-expand" type="button" aria-label="Expand details">⌃</button>
           <button
             id="sheet-close"
             class="icon-button"
             type="button"
             aria-label="Close project cards"
-          ></button>
+          ></button></div>
         </div>
-        <div id="cards" class="cards"></div>
+        <div id="cards" class="cards"></div><div id="sheet-details" class="sheet-details"></div>
       </section>
     </div>
     <dialog id="lightbox" aria-label="Project photo">

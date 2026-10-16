@@ -127,8 +127,33 @@
     $("back").innerHTML = img(assets().contact.imgIconArrowLeft, 18);
     $("sheet-close").innerHTML = img(assets().cards.imgIconX, 16);
   }
+  function setSheetMode(mode) {
+    const sheet = $("sheet");
+    if (mode === "closed") { closeSheet(); return; }
+    sheet.hidden = false;
+    sheet.inert = false;
+    sheet.dataset.mode = mode;
+    state.sheet = true;
+    $("sheet-expand").setAttribute("aria-label", mode === "full" ? "Collapse details" : "Expand details");
+    $("sheet-expand").textContent = mode === "full" ? "⌄" : "⌃";
+    renderSheetDetails();
+  }
+  function renderSheetDetails() {
+    const p = state.project;
+    if (!p) { $("sheet-details").innerHTML = ""; return; }
+    const area = areaOf(p);
+    const items = [
+      ["Project", p.name],
+      ["Property type", p.type || "Villa"],
+      ["Location", area?.name || "Location to be confirmed"],
+      ["Price", p.price == null ? "On request" : price(p.price)],
+      ["Location accuracy", isExact(p) ? "Verified location" : "Approximate area / not confirmed"]
+    ];
+    $("sheet-details").innerHTML = `<div class="sheet-details-inner"><p class="sheet-eyebrow">PROJECT OVERVIEW</p><h3>${esc(p.name)}</h3><p class="sheet-description">${esc(p.details || p.subtitle || "Explore this Botanica development in Phuket.")}</p><div class="sheet-facts">${items.map(([k,v]) => `<div><span>${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Enquire about this project →</button></div>`;
+  }
   function closeSheet(restore = false) {
     state.sheet = false;
+    $("sheet").dataset.mode = "closed";
     $("sheet").hidden = true;
     $("sheet").inert = true;
     $("footer").inert = false;
@@ -153,10 +178,7 @@
     renderNavigation();
     if (screen === "map") {
       // Cards remain visible even without a verified map location.
-      $("sheet").hidden = false;
-      $("sheet").inert = false;
       $("footer").inert = false;
-      state.sheet = true;
       renderCards();
       renderMap();
     }
@@ -306,6 +328,7 @@
     if (first) state.project = first;
     renderCards();
     renderMap();
+    setSheetMode("peek");
     $("cards").scrollLeft = 0;
   }
 
@@ -328,12 +351,14 @@
         </div>
       </article>`;
     }).join("");
+    if (state.sheet) renderSheetDetails();
   }
   function selectProject(id) {
     const p = state.list.find((p) => p.id === id);
     if (!p) return;
     state.project = p;
     renderNavigation();
+    renderSheetDetails();
   }
   function selectBudget(id) {
     state.budget = budgets().find((b) => b.id === id);
@@ -435,6 +460,19 @@
     if (b && !b.disabled) go(b.dataset.step);
   });
   $("sheet-close").addEventListener("click", () => closeSheet(true));
+  $("sheet-expand").addEventListener("click", () => setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"));
+  const handle = $("sheet-handle");
+  let startY = null;
+  handle.addEventListener("pointerdown", e => { startY = e.clientY; handle.setPointerCapture(e.pointerId); });
+  handle.addEventListener("pointerup", e => {
+    if (startY === null) return;
+    const delta = e.clientY - startY;
+    startY = null;
+    if (delta < -45) setSheetMode("full");
+    else if (delta > 90 && $("sheet").dataset.mode === "peek") closeSheet();
+    else if (delta > 45) setSheetMode("peek");
+  });
+  handle.addEventListener("click", () => setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"));
   $("channels").addEventListener("click", (e) => {
     const b = e.target.closest("[data-channel]");
     if (!b) return;
@@ -449,11 +487,17 @@
     $("form-error").textContent = "";
   });
   $("cards").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-card]");
+    if (card && !e.target.closest("[data-reserve]")) { selectProject(card.dataset.card); renderCards(); }
     const reserve = e.target.closest("[data-reserve]");
     if (reserve) {
       selectProject(reserve.dataset.reserve);
       go("contact");
     }
+  });
+  $("sheet-details").addEventListener("click", e => {
+    const b = e.target.closest("[data-reserve]");
+    if (b) { selectProject(b.dataset.reserve); go("contact"); }
   });
   $("area-chips").addEventListener("click", (e) => {
     const c = e.target.closest("[data-area]");
