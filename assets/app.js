@@ -171,81 +171,169 @@
     }
     $(screen).scrollTop = 0;
   }
-  let leafletMap = null;
-  let projectMarkers = null;
-  let mapReady = false;
-  // Only coordinates explicitly confirmed for this specific project produce pins.
-  // Never infer an address from a similar project or a Google search result.
+  /* ---------- Map: one pin per area, project cards below ---------- */
+  const AREAS = window.BOTANICA_AREAS || [];
+  const areaOf = (p) => AREAS.find((a) => a.projects.includes(p.id)) || null;
+  const isExact = (p) => p.locationStatus === "confirmed" && Number.isFinite(p.latitude) && Number.isFinite(p.longitude);
+  const mapsUrl = (p) => {
+    const a = areaOf(p);
+    const [lat, lng] = isExact(p) ? [p.latitude, p.longitude] : a ? [a.lat, a.lng] : [null, null];
+    return lat == null ? null : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  state.area = "all"; // "all" | area id | "tbc"
+  let map = null, markers = [], styledFor = null, libPromise = null;
+  // OpenFreeMap: бесплатные векторные стили без API-ключа.
+  // Для продакшена с гарантиями можно поднять свой хостинг и поменять только эти URL.
+  const MAP_STYLES = {
+    light: "https://tiles.openfreemap.org/styles/positron",
+    dark: "https://tiles.openfreemap.org/styles/dark",
+  };
+  function setMapStatus(msg) {
+    const el = $("map-status");
+    el.hidden = !msg;
+    el.textContent = msg || "";
+  }
+  // MapLibre GL JS: сначала локальная копия (assets/vendor), если её нет — CDN с зафиксированной версией.
+  const MAPLIBRE_VERSION = "5.6.0";
+  const MAPLIBRE_SOURCES = [
+    "assets/vendor",
+    `https://cdn.jsdelivr.net/npm/maplibre-gl@${MAPLIBRE_VERSION}/dist`,
+  ];
+  const addTag = (tag, attrs) =>
+    new Promise((resolve, reject) => {
+      const el = Object.assign(document.createElement(tag), attrs, { onload: resolve, onerror: reject });
+      document.head.appendChild(el);
+    });
+  async function loadFromBase(base) {
+    await addTag("link", { rel: "stylesheet", href: `${base}/maplibre-gl.css` });
+    await addTag("script", { src: `${base}/maplibre-gl.js`, async: true });
+    if (!window.maplibregl) throw new Error("maplibre-missing");
+  }
+  function loadMapLibre() {
+    if (libPromise) return libPromise;
+    libPromise = (async () => {
+      if (window.maplibregl) return;
+      let lastErr;
+      for (const base of MAPLIBRE_SOURCES) {
+        try { return await loadFromBase(base); } catch (e) { lastErr = e; }
+      }
+      throw lastErr || new Error("load-failed");
+    })();
+    libPromise.catch(() => {
+      libPromise = null;
+      setMapStatus("Map could not be loaded. Use the area chips and cards below.");
+    });
+    return libPromise;
+  }
+  function makePin(area, n, active) {
+    // Обёртка нужна: MapLibre двигает её через transform, а у .area-pin свой transform.
+    const wrap = document.createElement("div");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "area-pin" + (active ? " active" : "");
+    btn.setAttribute("aria-label", `${area.name}: ${n} project${n > 1 ? "s" : ""}`);
+    btn.innerHTML = `<b>${n}</b><i>${esc(area.name)}</i>`;
+    btn.addEventListener("click", () => selectArea(area.id));
+    wrap.appendChild(btn);
+    return wrap;
+  }
+  const areaProjects = (a) => state.list.filter((p) => a.projects.includes(p.id));
+  const tbcProjects = () => state.list.filter((p) => !areaOf(p));
+  const visibleProjects = () =>
+    state.area === "all" ? state.list
+    : state.area === "tbc" ? tbcProjects()
+    : state.list.filter((p) => areaOf(p)?.id === state.area);
+
+  function renderChips() {
+    const chip = (id, label, n) =>
+      `<button type="button" class="area-chip" data-area="${id}" aria-pressed="${state.area === id}">${label}<span>${n}</span></button>`;
+    const withProjects = AREAS.filter((a) => areaProjects(a).length);
+    $("area-chips").innerHTML =
+      chip("all", "All", state.list.length) +
+      withProjects.map((a) => chip(a.id, esc(a.name), areaProjects(a).length)).join("") +
+      (tbcProjects().length ? chip("tbc", "To be confirmed", tbcProjects().length) : "");
+  }
+
   function renderMap() {
     $("map-empty").hidden = state.list.length !== 0;
-    const notice = $("price-filter-notice");
-    if (notice) notice.hidden = true;
-    const fallback = $("map-location-fallback");
-    if (!window.L) {
-      fallback.hidden = false;
-      fallback.textContent = "Map unavailable. Select a project from the cards below.";
-      return;
+    renderChips();
+    loadMapLibre().then(drawMap).catch(() => {});
+  }
+  function drawMap() {
+    if (state.screen !== "map") return;
+    setMapStatus("");
+    const styleUrl = state.theme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;
+    if (!map) {
+      map = new maplibregl.Map({
+        container: "project-map",
+        style: styleUrl,
+        center: [98.32, 7.95],
+        zoom: 10,
+        attributionControl: { compact: true },
+      });
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+      styledFor = state.theme;
+    } else if (styledFor !== state.theme) {
+      map.setStyle(styleUrl);
+      styledFor = state.theme;
     }
-    if (!leafletMap) {
-      leafletMap = L.map("project-map", { zoomControl: true, scrollWheelZoom: false, attributionControl: true }).setView([7.9519, 98.3381], 11);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(leafletMap);
-      projectMarkers = L.layerGroup().addTo(leafletMap);
-    }
-    projectMarkers.clearLayers();
-    const positioned = state.list.filter(p => Number.isFinite(p.latitude) && Number.isFinite(p.longitude) && p.locationStatus === "confirmed");
-    positioned.forEach(p => {
-      const marker = L.marker([p.latitude, p.longitude], {
-        title: p.name,
-        alt: `Select ${p.name}`,
-        icon: L.divIcon({ className: "botanica-pin", html: '<span aria-hidden="true">◆</span>', iconSize: [34, 42], iconAnchor: [17, 40] })
-      }).addTo(projectMarkers);
-      marker.on("click", () => selectProject(p.id, true));
-      if (marker.getElement()) marker.getElement().setAttribute("aria-label", `Select ${p.name}`);
+    markers.forEach((m) => m.remove());
+    markers = [];
+    const shown = AREAS.filter((a) => areaProjects(a).length);
+    shown.forEach((a) => {
+      const el = makePin(a, areaProjects(a).length, state.area === a.id);
+      markers.push(new maplibregl.Marker({ element: el }).setLngLat([a.lng, a.lat]).addTo(map));
     });
-    fallback.hidden = positioned.length > 0;
-    if (!positioned.length) fallback.textContent = "Project locations to be confirmed · Select from the cards below";
-    if (state.project && positioned.includes(state.project)) {
-      leafletMap.panTo([state.project.latitude, state.project.longitude], { animate: !reducedMotion() });
-    }
-    requestAnimationFrame(() => leafletMap.invalidateSize());
+    map.resize();
+    requestAnimationFrame(() => {
+      const sheetH = ($("sheet").hidden ? 0 : $("sheet").offsetHeight) + 100;
+      const target = state.area === "all" || state.area === "tbc" ? shown : shown.filter((a) => a.id === state.area);
+      if (!target.length) return;
+      const bounds = new maplibregl.LngLatBounds();
+      target.forEach((a) => bounds.extend([a.lng, a.lat]));
+      map.fitBounds(bounds, {
+        padding: { top: 150, bottom: sheetH + 24, left: 24, right: 24 },
+        maxZoom: 13,
+        duration: 0,
+      });
+    });
   }
-  let cardScrollTimer,
-    scrollLocked = false;
+
+  function selectArea(id) {
+    state.area = state.area === id && id !== "all" ? "all" : id;
+    const first = visibleProjects()[0];
+    if (first) state.project = first;
+    renderCards();
+    renderMap();
+    $("cards").scrollLeft = 0;
+  }
+
   function renderCards() {
-    $("cards").innerHTML = state.list
-      .map((p) => {
-        const badge = p.paymentPlan ? '<span class="project-badge">70/30 payment plan</span>' : '';
-        const media = p.image
-          ? `<img class="project-photo" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async"><button class="photo-button" type="button" data-photo="${p.id}" aria-label="Enlarge ${p.name} photo"></button>`
-          : `<span class="photo-soon">Photo coming soon</span>`;
-        return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">${media}${badge}<div class="project-content"><h3>${p.name}</h3><p class="project-subtitle">${p.subtitle}</p>${p.details ? `<details class="project-details"><summary>Project details</summary><p>${p.details}</p></details>` : ''}<button class="project-select" type="button" data-select="${p.id}" aria-pressed="${state.project?.id === p.id}">View on map</button><button class="button primary" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request Pricing" : price(p.price)}</span>${arrow}</button></div></article>`;
-      })
-      .join("");
+    const list = visibleProjects();
+    const a = state.area !== "all" && state.area !== "tbc" ? AREAS.find((x) => x.id === state.area) : null;
+    $("sheet-title").textContent =
+      state.area === "tbc" ? "Location to be confirmed" : a ? `${a.name} · ${list.length} project${list.length > 1 ? "s" : ""}` : `All projects · ${list.length}`;
+    $("cards").innerHTML = list.map((p) => {
+      const area = areaOf(p);
+      const url = mapsUrl(p);
+      const where = isExact(p) ? "Exact location" : area ? `${esc(area.name)} area` : "Location to be confirmed";
+      return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">
+        <span class="place-tag${area ? "" : " tbc"}">${where}</span>
+        <h3>${esc(p.name)}</h3>
+        <p class="project-subtitle">${esc(p.subtitle)}</p>
+        <div class="card-actions">
+          ${url ? `<a class="card-link" href="${url}" target="_blank" rel="noopener">Open in Maps</a>` : ""}
+          <button class="card-cta" type="button" data-reserve="${p.id}">${p.price == null ? "Request pricing" : price(p.price)}</button>
+        </div>
+      </article>`;
+    }).join("");
   }
-  function selectProject(id, open = true) {
+  function selectProject(id) {
     const p = state.list.find((p) => p.id === id);
     if (!p) return;
     state.project = p;
-    document.querySelectorAll("[data-card]").forEach(c => c.classList.toggle("selected", c.dataset.card === id));
-    document.querySelectorAll("[data-select]").forEach(b => b.setAttribute("aria-pressed", b.dataset.select === id));
-    renderMap();
     renderNavigation();
-    if (open) {
-      state.sheet = true;
-      $("sheet").hidden = false;
-      $("sheet").inert = false;
-      $("footer").inert = false;
-      const card = document.querySelector(`[data-card="${id}"]`);
-      scrollLocked = true;
-      if (card) {
-        card.scrollIntoView({ behavior: reducedMotion() ? "instant" : "smooth", block: "nearest", inline: "center" });
-        card.setAttribute("tabindex", "-1");
-        card.focus({ preventScroll: true });
-      }
-      requestAnimationFrame(() => { scrollLocked = false; });
-    }
   }
   function selectBudget(id) {
     state.budget = budgets().find((b) => b.id === id);
@@ -255,6 +343,7 @@
     // Keep navigation usable by displaying the full unfiltered catalogue instead.
     state.list = matched.length ? matched : PROJECTS.slice();
     state.project = state.list.find((p) => p.id === state.project?.id) || state.list[0] || null;
+    state.area = "all";
     renderBudgets();
     renderMap();
     renderCards();
@@ -360,30 +449,19 @@
     $("form-error").textContent = "";
   });
   $("cards").addEventListener("click", (e) => {
-    const reserve = e.target.closest("[data-reserve]"),
-      photo = e.target.closest("[data-photo]");
+    const reserve = e.target.closest("[data-reserve]");
     if (reserve) {
-      selectProject(reserve.dataset.reserve, false);
+      selectProject(reserve.dataset.reserve);
       go("contact");
     }
-    const selection = e.target.closest("[data-select]");
-    if (selection) selectProject(selection.dataset.select, false);
-    if (photo) {
-      const p = state.list.find((p) => p.id === photo.dataset.photo);
-      openPhoto(p);
-    }
   });
-  $("cards").addEventListener("scroll", () => {
-    if (scrollLocked) return;
-    clearTimeout(cardScrollTimer);
-    cardScrollTimer = setTimeout(() => {
-      if (!state.sheet || state.screen !== "map") return;
-      const cards = [...$("cards").children];
-      const nearest = cards.find(c => c.getBoundingClientRect().left >= 0) || cards[0];
-      if (nearest) selectProject(nearest.dataset.card, false);
-    }, 120);
+  $("area-chips").addEventListener("click", (e) => {
+    const c = e.target.closest("[data-area]");
+    if (!c) return;
+    state.area = "";            // force a fresh selection instead of toggling
+    selectArea(c.dataset.area);
   });
-  // Google Maps uses its own built-in controls.
+  // MapLibre uses its own built-in controls.
   // The prototype prepares a payload; enable fetch('/api/order', ...) only once
   // an actual backend exists. Never display a false "sent" confirmation.
   $("contact-form").addEventListener("submit", (e) => {

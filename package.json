@@ -5,6 +5,7 @@
   "scripts": {
     "dev:prototype": "node scripts/serve-prototype.mjs",
     "prototype:sync": "node scripts/sync-prototype.mjs",
+    "map:fetch": "node scripts/fetch-maplibre.mjs",
     "dev": "next dev",
     "build": "next build",
     "build:cloudflare": "opennextjs-cloudflare build",

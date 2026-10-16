@@ -1355,47 +1355,72 @@ dialog::backdrop {
 }
 
 /* Catalogue / native Google Maps refinements */
-#google-map{display:block;width:100%;height:100%;min-height:320px;border:0;border-radius:inherit}#google-map[hidden]{display:none}.map-location-fallback{display:grid;place-items:center;text-align:center;min-height:300px;padding:24px;background:var(--surface,#e9edf0);color:var(--text,#27313a)}.map-location-fallback[hidden]{display:none}.project-subtitle{font-size:13px!important;line-height:1.45!important;white-space:normal!important;overflow:visible!important;display:block!important}.project-details{font-size:12px;margin:8px 0}.project-details summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}.project-select{display:block;cursor:pointer;border:1px solid currentColor;background:transparent;color:inherit;border-radius:6px;padding:9px 12px;margin:10px 0;width:100%;font:inherit}.project-select:focus-visible,.budget-option:focus-visible{outline:3px solid #4a91e2;outline-offset:2px}.budget-option:disabled{opacity:.4;cursor:not-allowed}.map-title .subtitle{max-width:28rem}#open-google-maps{display:inline-block;margin-top:8px;text-decoration:underline}#open-google-maps[hidden]{display:none}
+.map-location-fallback{display:grid;place-items:center;text-align:center;min-height:300px;padding:24px;background:var(--surface,#e9edf0);color:var(--text,#27313a)}.map-location-fallback[hidden]{display:none}.project-subtitle{font-size:13px!important;line-height:1.45!important;white-space:normal!important;overflow:visible!important;display:block!important}.project-details{font-size:12px;margin:8px 0}.project-details summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}.project-select{display:block;cursor:pointer;border:1px solid currentColor;background:transparent;color:inherit;border-radius:6px;padding:9px 12px;margin:10px 0;width:100%;font:inherit}.project-select:focus-visible,.budget-option:focus-visible{outline:3px solid #4a91e2;outline-offset:2px}.budget-option:disabled{opacity:.4;cursor:not-allowed}.map-title .subtitle{max-width:28rem}#open-google-maps{display:inline-block;margin-top:8px;text-decoration:underline}#open-google-maps[hidden]{display:none}
 
-/* Map browsing: always expose project cards; map may be unavailable. */
-#map.map-screen { bottom: 0; }
-#map-viewport { bottom: 280px; touch-action: auto; }
-#map-location-fallback { position:absolute; inset:0; min-height:0; display:flex; align-items:center; justify-content:center; padding:24px; background:transparent; color:var(--strong); font-size:15px; }
-#map-location-fallback[hidden] {display:none;}
-#map .map-title { z-index:2; pointer-events:auto; }
-#sheet:not([hidden]) { bottom:calc(88px + env(safe-area-inset-bottom, 0px)); padding-bottom:14px; max-height:250px; overflow:visible; border-radius:20px; box-shadow:0 -8px 24px rgba(0,0,0,.10); }
-#sheet .cards { padding-bottom:10px; }
-#sheet .project-card { height:190px; flex-basis:min(272px,78vw); }
-#sheet .project-content { position:absolute; top:8px; bottom:8px; overflow-y:auto; padding:10px; background:rgba(10,31,50,.84); }
-#sheet .project-content h3 {font-size:15px;line-height:1.25;}
-#sheet .project-content .project-subtitle {font-size:12px!important;line-height:1.35!important;}
-#sheet .project-content .button {margin-top:7px;}
-#sheet .project-content .project-select {margin:6px 0;padding:6px;}
-#sheet .photo-soon {display:none;}
-#sheet .project-card { background:linear-gradient(130deg,#31536c,#0b263e); }
-#sheet .sheet-header { margin-bottom:8px; }
-@media(max-width:640px) {#map-viewport{bottom:305px} #sheet:not([hidden]){max-height:270px;bottom:calc(83px + env(safe-area-inset-bottom, 0px))} #sheet .project-card{height:208px;} #map .map-title{top:calc(95px + env(safe-area-inset-top, 0px));}}
+/* ===== Map screen (rewritten): full-bleed map, area chips, compact bottom sheet ===== */
+#map.map-screen { position:absolute; inset:0; }
+#map-viewport { position:absolute; inset:0; background:var(--subtle); touch-action:auto; }
+#project-map { position:absolute; inset:0; width:100%; height:100%; z-index:0; background:var(--subtle); }
 
-/* 2026 map simplification: native Google map, no fake location markers. */
-#map-viewport {touch-action:auto!important;background:#e8edf0!important;}
-#google-map {position:absolute;inset:0;width:100%;height:100%;border:0;}
-#map-location-fallback:not([hidden]) {position:absolute;inset:auto 12px 10px!important;min-height:0!important;width:calc(100% - 24px);padding:7px 10px!important;border-radius:10px;background:rgba(255,255,255,.94)!important;color:#23364a!important;font-size:11px!important;pointer-events:none;z-index:2;}
-#map .map-title {pointer-events:auto;z-index:3;}
-#map .map-title h1 {pointer-events:none;}
-#map .map-title .subtitle {font-size:12px;line-height:1.35;}
-#open-google-maps {font-size:12px;display:inline-block;padding:5px 0;pointer-events:auto;}
-#sheet:not([hidden]) {z-index:4;}
-#sheet .project-content {background:rgba(10,31,50,.93);color:white;}
-#sheet .project-content h3,#sheet .project-content p {color:white;}
-#sheet .project-card {scroll-snap-align:start;}
+/* Area filter chips, sit under the logo bar */
+.area-chips {
+  position:absolute; z-index:5; left:0; right:0;
+  top:calc(96px + env(safe-area-inset-top, 0px));
+  display:flex; gap:8px; padding:4px 16px 8px; overflow-x:auto; scrollbar-width:none;
+}
+.area-chips::-webkit-scrollbar { display:none; }
+.area-chip {
+  flex:none; display:inline-flex; align-items:center; gap:8px; min-height:36px; padding:0 14px;
+  border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--ink);
+  font:inherit; font-size:13px; line-height:1; cursor:pointer; box-shadow:0 2px 8px rgba(0,30,58,.10);
+}
+.area-chip span { font-size:11px; color:var(--muted); }
+.area-chip[aria-pressed="true"] { background:var(--active); color:var(--on-active); border-color:var(--active); }
+.area-chip[aria-pressed="true"] span { color:inherit; opacity:.75; }
+.area-chip:focus-visible, .card-link:focus-visible, .card-cta:focus-visible { outline:3px solid #4a91e2; outline-offset:2px; }
 
-/* Minimal interactive map: no floating marketing panel or external-map links. */
-#map .map-title, #open-google-maps { display:none!important; }
-#project-map { position:absolute; inset:0; width:100%; height:100%; z-index:0; background:#e4ece7; }
-#map-viewport { background:#e4ece7!important; }
-#map-location-fallback:not([hidden]) { position:absolute!important; top:16px!important; bottom:auto!important; left:50%!important; right:auto!important; transform:translateX(-50%); width:max-content!important; max-width:calc(100% - 32px); padding:8px 14px!important; border-radius:999px; background:rgba(255,255,255,.94)!important; color:#30465a!important; font-size:12px!important; z-index:2; pointer-events:none; text-align:center; }
-.botanica-pin { background:transparent; border:0; }
-.botanica-pin span { display:grid; place-items:center; width:34px; height:34px; border-radius:50% 50% 50% 4px; transform:rotate(-45deg); background:#d8b457; color:#0a2335; border:2px solid #fff; box-shadow:0 3px 12px #0004; font-size:16px; }
-.botanica-pin span::first-letter { transform:rotate(45deg); }
-.leaflet-marker-icon:focus-visible { outline:3px solid #2765db; outline-offset:3px; }
-#map-viewport .leaflet-container { font-family:inherit; }
+/* Pins: a count bubble with the area name */
+.area-pin {
+  position:absolute; left:0; top:0; transform:translate(-50%,-50%); font:inherit; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 4px; white-space:nowrap;
+  border-radius:999px; background:var(--surface); color:var(--ink);
+  box-shadow:0 3px 12px rgba(0,30,58,.28); border:1px solid var(--border); transition:transform .15s;
+}
+.area-pin b { display:grid; place-items:center; min-width:24px; height:24px; border-radius:50%; background:var(--accent); color:#001e3a; font-size:12px; }
+.area-pin i { font-style:normal; font-size:12px; font-weight:600; }
+.area-pin.active { background:var(--active); color:var(--on-active); border-color:var(--active); transform:translate(-50%,-50%) scale(1.12); }
+
+/* Bottom sheet with cards */
+#sheet:not([hidden]) {
+  z-index:6; bottom:calc(88px + env(safe-area-inset-bottom, 0px)); left:8px; right:8px;
+  max-height:none; overflow:visible; padding:0 0 12px; border-radius:22px;
+  background:var(--glass); backdrop-filter:blur(14px);
+  border:1px solid var(--glass-line); box-shadow:0 10px 30px rgba(0,30,58,.18);
+}
+#sheet .sheet-handle, #sheet #sheet-close { display:none; }
+#sheet .sheet-header { padding:14px 18px 8px; margin:0; }
+#sheet .sheet-header h2 { font-size:15px; line-height:20px; }
+#sheet .cards { padding:0 12px 4px; gap:10px; scroll-padding-left:12px; }
+#sheet .project-card {
+  flex:0 0 min(260px,78%); height:auto; padding:14px; border-radius:16px; scroll-snap-align:start;
+  background:var(--surface); color:var(--ink); border:1px solid var(--border); display:flex; flex-direction:column; gap:6px;
+}
+#sheet .project-card.selected { border-color:var(--ink); }
+#sheet .project-card h3 { font-size:15px; line-height:20px; margin:0; color:var(--ink); }
+#sheet .project-card .project-subtitle { margin:0; font-size:12px!important; line-height:1.4!important; color:var(--muted); }
+.place-tag { align-self:flex-start; padding:3px 8px; border-radius:999px; font-size:11px; background:var(--subtle); color:var(--muted); }
+.place-tag.tbc { border:1px dashed var(--strong); background:none; }
+.card-actions { display:flex; gap:8px; margin-top:auto; padding-top:6px; }
+.card-link, .card-cta { flex:1; min-height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; font:inherit; font-size:12px; text-decoration:none; cursor:pointer; text-align:center; }
+.card-link { border:1px solid var(--strong); color:var(--ink); background:none; }
+.card-cta { border:0; background:var(--active); color:var(--on-active); }
+#map-empty { position:absolute; z-index:6; left:16px; right:16px; top:48%; }
+@media (min-width:640px) { #sheet:not([hidden]) { left:16px; right:16px; } }
+@media (prefers-reduced-motion:reduce) { .area-pin { transition:none; } }
+
+/* MapLibre specifics */
+#project-map .maplibregl-ctrl-attrib { font-size:10px; }
+#project-map .maplibregl-ctrl-top-right { top:calc(150px + env(safe-area-inset-top, 0px)); }
+.map-status { position:absolute; z-index:4; left:16px; right:16px; top:50%; transform:translateY(-50%); margin:0; padding:14px 16px; border-radius:14px; text-align:center; font-size:13px; line-height:1.4; background:var(--surface); color:var(--muted); border:1px dashed var(--strong); }
+.map-status[hidden] { display:none; }
+.area-pin:focus-visible { outline:3px solid #4a91e2; outline-offset:2px; }
