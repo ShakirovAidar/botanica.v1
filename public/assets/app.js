@@ -23,7 +23,7 @@
     Instagram: "@username",
     Facebook: "Profile link or name",
   };
-  const slides = ["23d80.png", "a7387.png", "31222.png", "f9474.png"];
+  const slides = ["23d80.png", "a7387.webp", "31222.png", "f9474.png"];
   const readTheme = () => {
     try {
       return localStorage.getItem("50lemons-theme");
@@ -172,13 +172,13 @@
     const link = $("open-google-maps");
     if (p?.mapEmbed && p?.mapShare) {
       iframe.hidden = false;
-      iframe.src = p.mapEmbed;
+      if (iframe.getAttribute("src") !== p.mapEmbed) iframe.src = p.mapEmbed;
       fallback.hidden = true;
       link.hidden = false;
       link.href = p.mapShare;
     } else {
       iframe.hidden = true;
-      iframe.removeAttribute("src");
+      if (iframe.hasAttribute("src")) iframe.removeAttribute("src");
       fallback.hidden = false;
       fallback.textContent = p ? `${p.name} — Location to be confirmed` : "Select a project to view its location";
       link.hidden = true;
@@ -192,7 +192,7 @@
       .map((p) => {
         const badge = p.paymentPlan ? '<span class="project-badge">70/30 payment plan</span>' : '';
         const media = p.image
-          ? `<img class="project-photo" src="${p.image}" alt="${p.name}"><button class="photo-button" type="button" data-photo="${p.id}" aria-label="Enlarge ${p.name} photo"></button>`
+          ? `<img class="project-photo" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async"><button class="photo-button" type="button" data-photo="${p.id}" aria-label="Enlarge ${p.name} photo"></button>`
           : `<span class="photo-soon">Photo coming soon</span>`;
         return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">${media}${badge}<div class="project-content"><h3>${p.name}</h3><p class="project-subtitle">${p.subtitle}</p>${p.details ? `<details class="project-details"><summary>Project details</summary><p>${p.details}</p></details>` : ''}<button class="project-select" type="button" data-select="${p.id}" aria-pressed="${state.project?.id === p.id}">View on map</button><button class="button primary" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request Pricing" : price(p.price)}</span>${arrow}</button></div></article>`;
       })
@@ -348,12 +348,14 @@
     clearTimeout(cardScrollTimer);
     cardScrollTimer = setTimeout(() => {
       if (!state.sheet) return;
-      const cards = [...$("cards").children];
-      const nearest = cards.sort(
-        (a, b) =>
-          Math.abs(a.offsetLeft - 16 - $("cards").scrollLeft) -
-          Math.abs(b.offsetLeft - 16 - $("cards").scrollLeft),
-      )[0];
+      const cards = $("cards").children;
+      const scrollLeft = $("cards").scrollLeft;
+      let nearest = null;
+      let minDistance = Infinity;
+      for (const card of cards) {
+        const distance = Math.abs(card.offsetLeft - 16 - scrollLeft);
+        if (distance < minDistance) { minDistance = distance; nearest = card; }
+      }
       if (nearest) selectProject(nearest.dataset.card, false);
     }, 120);
   });
@@ -454,7 +456,7 @@
   gallery.innerHTML = slides
     .map(
       (file, i) =>
-        `<img src="assets/figma/${file}" alt="Phuket villa view ${i + 1}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} draggable="false">`,
+        `<img src="assets/figma/${file}" alt="Phuket villa view ${i + 1}" decoding="async" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} draggable="false">`,
     )
     .join("");
   dots.innerHTML = slides
