@@ -62,7 +62,7 @@
     $("budgets").innerHTML = budgets()
       .map(
         (b, i) =>
-          `<button class="budget-option" type="button" data-budget="${b.id}" aria-pressed="${state.budget?.id === b.id}" ${inBudget(b).length ? "" : "disabled"}><span class="budget-icon">${img(i === 0 ? assets().budget.imgIconPalmtree : assets().budget.imgIconPalmtree1)}</span><span class="budget-copy"><strong>${budgetLabel(b)}</strong><small>${inBudget(b).length} projects on the map</small></span><span class="budget-arrow">${img(assets().budget.imgIconArrowRight, 16)}</span></button>`,
+          `<button class="budget-option" type="button" data-budget="${b.id}" aria-pressed="${state.budget?.id === b.id}" ><span class="budget-icon">${img(i === 0 ? assets().budget.imgIconPalmtree : assets().budget.imgIconPalmtree1)}</span><span class="budget-copy"><strong>${budgetLabel(b)}</strong><small>${inBudget(b).length} projects on the map</small></span><span class="budget-arrow">${img(assets().budget.imgIconArrowRight, 16)}</span></button>`,
       )
       .join("");
   }
@@ -173,6 +173,12 @@
   }
   function renderMap() {
     $("map-empty").hidden = state.list.length !== 0;
+    const notice = $("price-filter-notice");
+    if (notice) {
+      const unverified = state.budget && state.budget.id !== "all" && !inBudget(state.budget).length;
+      notice.hidden = !unverified;
+      notice.textContent = unverified ? `Current prices for ${state.budget.label} are not verified. Showing all ${PROJECTS.length} projects without claiming they fall within this range. Request pricing for availability.` : "";
+    }
     const p = state.project;
     const iframe = $("google-map");
     const fallback = $("map-location-fallback");
@@ -227,8 +233,11 @@
   }
   function selectBudget(id) {
     state.budget = budgets().find((b) => b.id === id);
-    if (!state.budget || !inBudget(state.budget).length) return;
-    state.list = inBudget(state.budget);
+    if (!state.budget) return;
+    const matched = inBudget(state.budget);
+    // Unknown prices cannot be classified into a budget band.
+    // Keep navigation usable by displaying the full unfiltered catalogue instead.
+    state.list = matched.length ? matched : PROJECTS.slice();
     state.project = state.list.find((p) => p.id === state.project?.id) || state.list[0] || null;
     renderBudgets();
     renderMap();
