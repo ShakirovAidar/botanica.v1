@@ -171,30 +171,45 @@
     }
     $(screen).scrollTop = 0;
   }
+  let leafletMap = null;
+  let projectMarkers = null;
+  let mapReady = false;
+  // Only coordinates explicitly confirmed for this specific project produce pins.
+  // Never infer an address from a similar project or a Google search result.
   function renderMap() {
     $("map-empty").hidden = state.list.length !== 0;
     const notice = $("price-filter-notice");
-    if (notice) {
-      const unverified = state.budget && state.budget.id !== "all" && !inBudget(state.budget).length;
-      notice.hidden = !unverified;
-      notice.textContent = unverified ? `Current prices for ${state.budget.label} are not verified. Showing all ${PROJECTS.length} projects without claiming they fall within this range. Request pricing for availability.` : "";
-    }
-    const p = state.project;
-    const iframe = $("google-map");
+    if (notice) notice.hidden = true;
     const fallback = $("map-location-fallback");
-    const link = $("open-google-maps");
-    // Search embeds work without a Google Maps API key. Search results are NOT verified locations.
-    const query = p ? `${p.name}, Phuket, Thailand` : 'Phuket, Thailand';
-    const embed = p?.mapEmbed || `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=12&output=embed`;
-    const share = p?.mapShare || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-    iframe.hidden = false;
-    if (iframe.getAttribute('src') !== embed) iframe.setAttribute('src', embed);
-    fallback.hidden = false;
-    fallback.textContent = p ? 'Map search preview — exact project location not verified' : 'Phuket overview — select a project below';
-    link.hidden = false;
-    link.href = share;
-    link.textContent = p ? 'Search this project in Google Maps ↗' : 'Open Phuket in Google Maps ↗';
-
+    if (!window.L) {
+      fallback.hidden = false;
+      fallback.textContent = "Map unavailable. Select a project from the cards below.";
+      return;
+    }
+    if (!leafletMap) {
+      leafletMap = L.map("project-map", { zoomControl: true, scrollWheelZoom: false, attributionControl: true }).setView([7.9519, 98.3381], 11);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(leafletMap);
+      projectMarkers = L.layerGroup().addTo(leafletMap);
+    }
+    projectMarkers.clearLayers();
+    const positioned = state.list.filter(p => Number.isFinite(p.latitude) && Number.isFinite(p.longitude) && p.locationStatus === "confirmed");
+    positioned.forEach(p => {
+      const marker = L.marker([p.latitude, p.longitude], {
+        title: p.name,
+        alt: `Select ${p.name}`,
+        icon: L.divIcon({ className: "botanica-pin", html: '<span aria-hidden="true">◆</span>', iconSize: [34, 42], iconAnchor: [17, 40] })
+      }).addTo(projectMarkers);
+      marker.on("click", () => selectProject(p.id, true));
+      if (marker.getElement()) marker.getElement().setAttribute("aria-label", `Select ${p.name}`);
+    });
+    fallback.hidden = positioned.length > 0;
+    if (!positioned.length) fallback.textContent = "Project locations to be confirmed · Select from the cards below";
+    if (state.project && positioned.includes(state.project)) {
+      leafletMap.panTo([state.project.latitude, state.project.longitude], { animate: !reducedMotion() });
+    }
+    requestAnimationFrame(() => leafletMap.invalidateSize());
   }
   let cardScrollTimer,
     scrollLocked = false;
@@ -224,11 +239,12 @@
       $("footer").inert = false;
       const card = document.querySelector(`[data-card="${id}"]`);
       scrollLocked = true;
-      if (card) $("cards").scrollLeft = card.offsetLeft - 16;
-      requestAnimationFrame(() => {
-        scrollLocked = false;
-      });
-      $("sheet-close").focus({ preventScroll: true });
+      if (card) {
+        card.scrollIntoView({ behavior: reducedMotion() ? "instant" : "smooth", block: "nearest", inline: "center" });
+        card.setAttribute("tabindex", "-1");
+        card.focus({ preventScroll: true });
+      }
+      requestAnimationFrame(() => { scrollLocked = false; });
     }
   }
   function selectBudget(id) {
@@ -298,7 +314,7 @@
     if (state.budget) {
       const available = budgets();
       state.budget = available.find(b => b.id === state.budget.id) || {id:"all",label:"Browse All Projects"};
-      state.list = inBudget(state.budget);
+      state.list = inBudget(state.budget).length ? inBudget(state.budget) : PROJECTS.slice();
       if (!state.list.some(p => p.id === state.project?.id)) state.project = state.list[0] || null;
       renderMap();
       renderCards();

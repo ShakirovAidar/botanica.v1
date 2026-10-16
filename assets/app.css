@@ -1388,3 +1388,14 @@ dialog::backdrop {
 #sheet .project-content {background:rgba(10,31,50,.93);color:white;}
 #sheet .project-content h3,#sheet .project-content p {color:white;}
 #sheet .project-card {scroll-snap-align:start;}
+
+/* Minimal interactive map: no floating marketing panel or external-map links. */
+#map .map-title, #open-google-maps { display:none!important; }
+#project-map { position:absolute; inset:0; width:100%; height:100%; z-index:0; background:#e4ece7; }
+#map-viewport { background:#e4ece7!important; }
+#map-location-fallback:not([hidden]) { position:absolute!important; top:16px!important; bottom:auto!important; left:50%!important; right:auto!important; transform:translateX(-50%); width:max-content!important; max-width:calc(100% - 32px); padding:8px 14px!important; border-radius:999px; background:rgba(255,255,255,.94)!important; color:#30465a!important; font-size:12px!important; z-index:2; pointer-events:none; text-align:center; }
+.botanica-pin { background:transparent; border:0; }
+.botanica-pin span { display:grid; place-items:center; width:34px; height:34px; border-radius:50% 50% 50% 4px; transform:rotate(-45deg); background:#d8b457; color:#0a2335; border:2px solid #fff; box-shadow:0 3px 12px #0004; font-size:16px; }
+.botanica-pin span::first-letter { transform:rotate(45deg); }
+.leaflet-marker-icon:focus-visible { outline:3px solid #2765db; outline-offset:3px; }
+#map-viewport .leaflet-container { font-family:inherit; }
