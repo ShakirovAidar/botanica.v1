@@ -954,6 +954,9 @@ img {
   line-height: 16px;
   pointer-events: none;
 }
+.project-badges { position:absolute; left:12px; top:12px; display:flex; flex-wrap:wrap; gap:6px; pointer-events:none; }
+.project-badges .project-badge { position:static; }
+.project-availability { position:absolute; left:12px; right:12px; bottom:12px; padding:7px 10px; border-radius:999px; background:rgba(0,30,58,.72); color:#fff; font-size:12px; line-height:16px; text-align:center; pointer-events:none; }
 .photo-soon {
   display: flex;
   position: absolute;

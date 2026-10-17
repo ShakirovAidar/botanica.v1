@@ -59,6 +59,7 @@
   const budgetLabel = (b) => b?.label || "Browse All Projects";
   const inBudget = (b) => PROJECTS.filter(p =>
     b.id === "all" ||
+    p.budgetGroups?.includes(b.id) ||
     p.price == null ||
     (p.price >= b.min && (b.id === "premium" ? p.price <= b.max : p.price < b.max))
   );
@@ -391,6 +392,8 @@
       return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">
         <div class="project-card-media">
           <img src="${esc(p.image || "assets/img/og-preview.jpg")}" alt="${esc(p.name)} villa" loading="lazy" draggable="false">
+          ${p.badges?.length ? `<div class="project-badges">${p.badges.map((badge) => `<span class="project-badge">${esc(badge)}</span>`).join("")}</div>` : ""}
+          ${p.availabilityNote ? `<div class="project-availability">${esc(p.availabilityNote)}</div>` : ""}
         </div>
         <div class="project-card-glass">
           <div class="project-card-copy">
