@@ -494,8 +494,15 @@
     sheet.classList.remove("is-dragging");
     sheet.releasePointerCapture?.(e.pointerId);
     sheet.style.height = "";
-    if (delta > 120 && sheet.dataset.mode === "peek") return closeSheet();
-    if (delta < -45 || height > viewport * 0.68) return setSheetMode("full");
+    // Direction must win over the current height. Otherwise a downward drag
+    // from the full sheet is immediately forced back to `full` by the height
+    // check below.
+    if (delta > 120) {
+      return sheet.dataset.mode === "full" ? setSheetMode("peek") : closeSheet();
+    }
+    if (delta < -45 || (delta >= 0 && height > viewport * 0.68)) {
+      return setSheetMode("full");
+    }
     setSheetMode("peek");
   };
   handle.addEventListener("pointerdown", e => {
@@ -514,6 +521,16 @@
   });
   sheet.addEventListener("pointerup", stopSheetDrag);
   sheet.addEventListener("pointercancel", stopSheetDrag);
+  const cards = $("cards");
+  cards.addEventListener("wheel", (e) => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    const maxScroll = cards.scrollWidth - cards.clientWidth;
+    if (maxScroll <= 0) return;
+    const next = Math.max(0, Math.min(maxScroll, cards.scrollLeft + e.deltaY));
+    if (next === cards.scrollLeft) return;
+    cards.scrollLeft = next;
+    e.preventDefault();
+  }, { passive: false });
   $("channels").addEventListener("click", (e) => {
     const b = e.target.closest("[data-channel]");
     if (!b) return;
