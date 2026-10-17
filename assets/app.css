@@ -1499,6 +1499,8 @@ dialog::backdrop {
   transition:height .3s cubic-bezier(.2,.8,.2,1); overscroll-behavior:contain;
 }
 #sheet[data-mode="full"]:not([hidden]) { height:100dvh; padding-top:env(safe-area-inset-top,0px); }
+#sheet[data-mode="peek"] { overflow-y:hidden; }
+#sheet[data-mode="full"] { overflow-y:auto; }
 #sheet .sheet-handle { display:block; width:48px; height:5px; margin:12px auto 10px; cursor:ns-resize; touch-action:none; flex:none; }
 #sheet #sheet-close { display:none; }
 #sheet #sheet-expand { display:none; }
