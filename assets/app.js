@@ -238,13 +238,7 @@
     "kamala-ocean-valley": "https://www.google.com/maps/search/?api=1&query=Botanica+Kamala+Ocean+Valley+Phuket",
     "krabi": "https://www.google.com/maps/search/?api=1&query=Botanica+Luxury+Krabi+Ao+Nang"
   };
-  const SAVED_PROJECT_POSITIONS_KEY = "botanica-project-map-positions";
-  const savedProjectPositions = (() => {
-    try { return JSON.parse(localStorage.getItem(SAVED_PROJECT_POSITIONS_KEY) || "{}"); } catch { return {}; }
-  })();
   const projectPosition = (p, a, index, total) => {
-    const saved = savedProjectPositions[p.id];
-    if (saved && Number.isFinite(saved.lng) && Number.isFinite(saved.lat)) return saved;
     if (isExact(p)) return { lng: p.longitude, lat: p.latitude };
     const spread = (index - (total - 1) / 2) * 0.002;
     return { lng: a.lng + spread, lat: a.lat + spread * 0.35 };
