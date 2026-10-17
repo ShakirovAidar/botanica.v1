@@ -372,13 +372,10 @@
     $("sheet-title").textContent =
       state.area === "tbc" ? "Location to be confirmed" : a ? `${a.name} · ${list.length} project${list.length > 1 ? "s" : ""}` : `All projects · ${list.length}`;
     $("cards").innerHTML = list.map((p) => {
-      const area = areaOf(p);
       const url = mapsUrl(p);
-      const where = isExact(p) ? "Exact location" : area ? `${esc(area.name)} area` : "Location to be confirmed";
       return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">
         <div class="project-card-media">
           <img src="${esc(p.image || "assets/img/og-preview.jpg")}" alt="${esc(p.name)} villa" loading="lazy" draggable="false">
-          <span class="place-tag${area ? "" : " tbc"}">${where}</span>
         </div>
         <div class="project-card-glass">
           <div class="project-card-copy">
@@ -590,9 +587,7 @@
     selectArea(c.dataset.area);
   });
   // MapLibre uses its own built-in controls.
-  // The prototype prepares a payload; enable fetch('/api/order', ...) only once
-  // an actual backend exists. Never display a false "sent" confirmation.
-  $("contact-form").addEventListener("submit", (e) => {
+  $("contact-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const contactValue = $("contact-value").value.trim();
     if (
@@ -626,6 +621,25 @@
       language: "en",
       consent: true,
     };
+    const submit = $("submit");
+    submit.disabled = true;
+    submit.textContent = "Sending…";
+    try {
+      const response = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state.request),
+      });
+      if (!response.ok) throw new Error("CRM request failed");
+    } catch {
+      $("form-error").textContent =
+        "We could not send your request. Please try again.";
+      submit.disabled = false;
+      submit.textContent = "Send Request";
+      return;
+    }
+    submit.disabled = false;
+    submit.textContent = "Send Request";
     const summary = $("summary");
     summary.replaceChildren();
     for (const [label, value] of [
