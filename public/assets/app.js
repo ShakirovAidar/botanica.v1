@@ -366,7 +366,10 @@
       const url = mapsUrl(p);
       const where = isExact(p) ? "Exact location" : area ? `${esc(area.name)} area` : "Location to be confirmed";
       return `<article class="project-card${state.project?.id === p.id ? " selected" : ""}" data-card="${p.id}">
-        <span class="place-tag${area ? "" : " tbc"}">${where}</span>
+        <div class="project-card-media">
+          <img src="${esc(p.image || "assets/img/og-preview.jpg")}" alt="${esc(p.name)} villa" loading="lazy" draggable="false">
+          <span class="place-tag${area ? "" : " tbc"}">${where}</span>
+        </div>
         <h3>${esc(p.name)}</h3>
         <p class="project-subtitle">${esc(p.subtitle)}</p>
         <div class="card-actions">
