@@ -71,7 +71,11 @@
   const assets = () => window.FIGMA_ASSETS[state.theme];
   const price = (n) => n == null ? "Price on request" : `From THB ${n}M`;
   const budgetLabel = (b) => b?.label || "Browse All Projects";
-  const inBudget = (b) => PROJECTS.filter(p => b.id === "all" || (b.id === "unknown" ? p.price == null : p.price != null && p.price >= b.min && (b.id === "premium" ? p.price <= b.max : p.price < b.max)));
+  const inBudget = (b) => PROJECTS.filter(p =>
+    b.id === "all" ||
+    p.price == null ||
+    (p.price >= b.min && (b.id === "premium" ? p.price <= b.max : p.price < b.max))
+  );
   const img = (src, w = 18, h = w) =>
     `<img src="${src}" alt="" width="${w}" height="${h}">`;
   const arrow = '<span class="button-arrow" aria-hidden="true"></span>';

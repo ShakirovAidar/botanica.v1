@@ -18,5 +18,5 @@ window.BOTANICA_AREAS = [
   { id: "karon",    name: "Karon",         lat: 7.8450, lng: 98.2980, projects: ["karon"] },
   { id: "chalong",  name: "Chalong",       lat: 7.8350, lng: 98.3400, projects: ["chalong-bay"] },
   { id: "rawai",    name: "Rawai",         lat: 7.7780, lng: 98.3220, projects: ["grand-sea-through"] },
-  { id: "krabi",    name: "Ao Nang, Krabi", lat: 8.0360, lng: 98.9060, projects: ["krabi"] }
+  { id: "krabi",    name: "Ao Nang, Krabi", lat: 8.0350, lng: 98.8380, projects: ["krabi"] }
 ];
