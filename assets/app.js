@@ -212,14 +212,47 @@
     }
     $(screen).scrollTop = 0;
   }
-  /* ---------- Map: one pin per area, project cards below ---------- */
+  /* ---------- Map: one pin per project, project cards below ---------- */
   const AREAS = window.BOTANICA_AREAS || [];
   const areaOf = (p) => AREAS.find((a) => a.projects.includes(p.id)) || null;
   const isExact = (p) => p.locationStatus === "confirmed" && Number.isFinite(p.latitude) && Number.isFinite(p.longitude);
+  const PROJECT_MAP_URLS = {
+    "skyport": "https://www.google.com/maps/search/?api=1&query=Botanica+Skyport+Sakhu+Phuket",
+    "grand-avenue": "https://www.google.com/maps/search/?api=1&query=Botanica+Grand+Avenue+Cherngtalay+Phuket",
+    "wisdom": "https://www.google.com/maps/search/?api=1&query=Botanica+Wisdom+Thalang+Phuket",
+    "forestique": "https://www.google.com/maps/search/?api=1&query=Botanica+Forestique+Cherngtalay+Phuket",
+    "four-seasons": "https://www.google.com/maps/search/?api=1&query=Botanica+Four+Seasons+Pru+Jampa+Phuket",
+    "pru-jampa": "https://www.google.com/maps/search/?api=1&query=Botanica+Pru+Jampa+Phuket",
+    "green-boulevard": "https://www.google.com/maps/search/?api=1&query=Botanica+Green+Boulevard+Pru+Jampa+Phuket",
+    "louvre": "https://www.google.com/maps/search/?api=1&query=Botanica+Louvre+Cherngtalay+Phuket",
+    "montazure": "https://www.google.com/maps/search/?api=1&query=Botanica+MontAzure+Kamala+Phuket",
+    "karon": "https://www.google.com/maps/search/?api=1&query=Botanica+Karon+Phuket",
+    "modern-loft-ii": "https://www.google.com/maps/search/?api=1&query=Botanica+Modern+Loft+II+Bang+Tao+Phuket",
+    "lakeside-2": "https://www.google.com/maps/search/?api=1&query=Botanica+Lakeside+II+Layan+Phuket",
+    "sky-valley": "https://www.google.com/maps/search/?api=1&query=Botanica+Sky+Valley+Layan+Phuket",
+    "chalong-bay": "https://www.google.com/maps/search/?api=1&query=Botanica+Chalong+Bay+Pa+Lai+Phuket",
+    "hythe": "https://www.google.com/maps/search/?api=1&query=HYTHE+by+Botanica+Grand+Avenue+Cherngtalay+Phuket",
+    "majestia": "https://www.google.com/maps/search/?api=1&query=Botanica+Majestia+Koh+Kaew+Phuket",
+    "the-verdant": "https://www.google.com/maps/search/?api=1&query=The+Verdant+by+Botanica+Pru+Jampa+Phuket",
+    "grand-sea-through": "https://www.google.com/maps/search/?api=1&query=Grand+Sea+Through+Botanica+Rawai+Phuket",
+    "kamala-ocean-valley": "https://www.google.com/maps/search/?api=1&query=Botanica+Kamala+Ocean+Valley+Phuket",
+    "krabi": "https://www.google.com/maps/search/?api=1&query=Botanica+Luxury+Krabi+Ao+Nang"
+  };
+  const SAVED_PROJECT_POSITIONS_KEY = "botanica-project-map-positions";
+  const savedProjectPositions = (() => {
+    try { return JSON.parse(localStorage.getItem(SAVED_PROJECT_POSITIONS_KEY) || "{}"); } catch { return {}; }
+  })();
+  const projectPosition = (p, a, index, total) => {
+    const saved = savedProjectPositions[p.id];
+    if (saved && Number.isFinite(saved.lng) && Number.isFinite(saved.lat)) return saved;
+    if (isExact(p)) return { lng: p.longitude, lat: p.latitude };
+    const spread = (index - (total - 1) / 2) * 0.002;
+    return { lng: a.lng + spread, lat: a.lat + spread * 0.35 };
+  };
   const mapsUrl = (p) => {
     const a = areaOf(p);
     const [lat, lng] = isExact(p) ? [p.latitude, p.longitude] : a ? [a.lat, a.lng] : [null, null];
-    return lat == null ? null : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    return PROJECT_MAP_URLS[p.id] || (lat == null ? null : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
   };
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   state.area = "all"; // "all" | area id | "tbc"
@@ -267,15 +300,15 @@
     });
     return libPromise;
   }
-  function makePin(area, n, active) {
+  function makePin(project, area, active) {
     // Обёртка нужна: MapLibre двигает её через transform, а у .area-pin свой transform.
     const wrap = document.createElement("div");
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "area-pin" + (active ? " active" : "");
-    btn.setAttribute("aria-label", `${area.name}: ${n} project${n > 1 ? "s" : ""}`);
-    btn.innerHTML = `<b>${n}</b><i>${esc(area.name)}</i>`;
-    btn.addEventListener("click", () => selectArea(area.id));
+    btn.setAttribute("aria-label", `${project.name} — ${area.name}`);
+    btn.innerHTML = `<img src="assets/icons/botanica-touch.png" alt="" aria-hidden="true"><i>${esc(project.name)}</i>`;
+    btn.addEventListener("click", () => { state.project = project; state.area = area.id; renderCards(); renderMap(); setSheetMode("peek"); });
     wrap.appendChild(btn);
     return wrap;
   }
@@ -323,8 +356,11 @@
     markers = [];
     const shown = AREAS.filter((a) => areaProjects(a).length);
     shown.forEach((a) => {
-      const el = makePin(a, areaProjects(a).length, state.area === a.id);
-      markers.push(new maplibregl.Marker({ element: el }).setLngLat([a.lng, a.lat]).addTo(map));
+      areaProjects(a).forEach((project, index) => {
+        const el = makePin(project, a, state.project?.id === project.id);
+        const position = projectPosition(project, a, index, areaProjects(a).length);
+        markers.push(new maplibregl.Marker({ element: el }).setLngLat([position.lng, position.lat]).addTo(map));
+      });
     });
     map.resize();
     requestAnimationFrame(() => {
@@ -365,11 +401,11 @@
         <div class="project-card-glass">
           <div class="project-card-copy">
             <h3>${esc(p.name)}</h3>
-            <p class="project-subtitle">${esc(p.subtitle)}</p>
+            <p class="project-subtitle">${esc(p.type || "Villa")} · ${esc(p.subtitle)}</p>
           </div>
           <div class="card-actions">
             ${url ? `<a class="card-link" href="${url}" target="_blank" rel="noopener">Open in Maps</a>` : ""}
-            <button class="card-cta" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request pricing" : `Reserve ${price(p.price)}`}</span><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></i></button>
+            <button class="card-cta" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request pricing" : `Reserve ${price(p.price)}${p.priceMax ? `–${p.priceMax}M` : ""}`}</span><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></i></button>
           </div>
         </div>
       </article>`;
@@ -470,15 +506,25 @@
   const sheet = $("sheet");
   let startY = null;
   let startHeight = 0;
+  let activePointerId = null;
+  const resetSheetDrag = (pointerId) => {
+    if (pointerId != null && activePointerId !== pointerId) return;
+    const capturedPointerId = activePointerId;
+    startY = null;
+    activePointerId = null;
+    sheet.classList.remove("is-dragging");
+    sheet.style.height = "";
+    if (capturedPointerId != null && sheet.hasPointerCapture?.(capturedPointerId)) {
+      sheet.releasePointerCapture(capturedPointerId);
+    }
+  };
   const stopSheetDrag = (e) => {
     if (startY === null) return;
+    if (e?.pointerId != null && e.pointerId !== activePointerId) return;
     const delta = e.clientY - startY;
     const height = sheet.getBoundingClientRect().height;
     const viewport = window.innerHeight;
-    startY = null;
-    sheet.classList.remove("is-dragging");
-    sheet.releasePointerCapture?.(e.pointerId);
-    sheet.style.height = "";
+    resetSheetDrag(e?.pointerId);
     // Direction must win over the current height. Otherwise a downward drag
     // from the full sheet is immediately forced back to `full` by the height
     // check below.
@@ -491,7 +537,8 @@
     setSheetMode("peek");
   };
   handle.addEventListener("pointerdown", e => {
-    if (sheet.hidden) return;
+    if (sheet.hidden || e.button !== 0 || startY !== null) return;
+    activePointerId = e.pointerId;
     startY = e.clientY;
     startHeight = sheet.getBoundingClientRect().height;
     sheet.classList.add("is-dragging");
@@ -499,13 +546,22 @@
     e.preventDefault();
   });
   sheet.addEventListener("pointermove", e => {
-    if (startY === null) return;
+    if (startY === null || e.pointerId !== activePointerId) return;
+    if (e.buttons === 0) return stopSheetDrag(e);
     const next = Math.max(120, Math.min(window.innerHeight, startHeight - (e.clientY - startY)));
     sheet.style.height = `${next}px`;
     e.preventDefault();
   });
   sheet.addEventListener("pointerup", stopSheetDrag);
   sheet.addEventListener("pointercancel", stopSheetDrag);
+  sheet.addEventListener("lostpointercapture", (e) => {
+    if (startY !== null) stopSheetDrag({ clientY: e.clientY ?? startY, pointerId: activePointerId });
+  });
+  document.addEventListener("pointerup", stopSheetDrag, true);
+  document.addEventListener("pointercancel", stopSheetDrag, true);
+  window.addEventListener("blur", () => {
+    if (startY !== null) stopSheetDrag({ clientY: startY, pointerId: activePointerId });
+  });
   const cards = $("cards");
   cards.addEventListener("wheel", (e) => {
     if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;

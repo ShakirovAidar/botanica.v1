@@ -213,10 +213,11 @@ window.BOTANICA_PROJECTS = [
   {
     "id": "hythe",
     "name": "HYTHE by Botanica",
-    "type": "Vertical villa",
-    "subtitle": "Luxury vertical villas near Laguna Golf",
-    "details": "In the heart of Bang Tao, near Laguna Golf.",
+    "type": "Condominium",
+    "subtitle": "Cherngtalay, Phuket · 10.8–165 MB",
+    "details": "Condominium residences in Cherngtalay, Phuket.",
     "price": 10.8,
+    "priceMax": 165,
     "priceSource": "https://www.botanicaluxuryvilla.com/projects/hythe-by-botanica/",
     "priceVerifiedAt": "2026-10-17",
     "image": "botanica-images/hythe.jpg",
@@ -267,7 +268,9 @@ window.BOTANICA_PROJECTS = [
     "image": "botanica-images/grand-sea-through.jpg",
     "mapEmbed": null,
     "mapShare": null,
-    "locationStatus": "unconfirmed",
+    "latitude": 7.7952,
+    "longitude": 98.3027,
+    "locationStatus": "confirmed",
     "paymentPlan": false
   },
   {
