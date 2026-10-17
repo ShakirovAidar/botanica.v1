@@ -1488,7 +1488,7 @@ dialog::backdrop {
 #sheet .sheet-handle {
   display:grid; place-items:center; width:100%; height:44px; margin:0;
   cursor:ns-resize; touch-action:none; flex:none;
-  background:var(--subtle); border-bottom:1px solid var(--border);
+  background:var(--subtle); border-bottom:0;
 }
 #sheet .sheet-handle span { display:block; width:48px; height:5px; border-radius:999px; background:var(--strong); }
 #sheet #sheet-close { display:none; }
@@ -1502,20 +1502,25 @@ dialog::backdrop {
 #sheet .cards { padding:4px 20px 14px; scroll-padding-left:20px; touch-action:pan-x; cursor:grab; }
 #sheet .cards:active { cursor: grabbing; }
 #sheet .project-card {
-  flex:0 0 min(290px,82vw); height:auto; padding:0 0 14px; border-radius:16px;
-  scroll-snap-align:start; background:var(--surface); color:var(--ink);
-  border:1px solid var(--border); display:flex; flex-direction:column; gap:6px;
+  position:relative; flex:0 0 min(296px,82vw); height:268px; padding:0;
+  scroll-snap-align:start; background:#9caf9b; color:#fff; border:0;
+  display:block; overflow:hidden;
   cursor:pointer;
 }
-#sheet .project-card-media { position:relative; width:100%; aspect-ratio:4 / 3; overflow:hidden; flex:none; }
-#sheet .project-card-media img { display:block; width:100%; height:100%; object-fit:contain; background:var(--subtle); }
-#sheet .project-card-media .place-tag { position:absolute; left:12px; top:12px; z-index:1; }
-#sheet .project-card.selected { border-color:var(--ink); }
-#sheet .project-card h3 { padding:14px 14px 0; font-size:15px; line-height:20px; margin:0; color:var(--ink); }
-#sheet .project-card .project-subtitle { padding:0 14px; margin:0; font-size:12px!important; line-height:1.4!important; color:var(--muted); }
-#sheet .project-card .card-actions { padding:6px 14px 0; }
+#sheet .project-card-media { position:absolute; inset:0; overflow:hidden; }
+#sheet .project-card-media img { display:block; width:100%; height:100%; object-fit:cover; }
+#sheet .project-card-media::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,30,58,.08) 20%,rgba(0,30,58,.04) 42%,rgba(0,30,58,.32) 100%); pointer-events:none; }
+#sheet .project-card-media .place-tag { position:absolute; left:12px; top:12px; z-index:2; padding:7px 12px; background:rgba(0,30,58,.58); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(10px); color:#fff; }
+#sheet .project-card.selected { outline:2px solid var(--accent); outline-offset:-2px; }
+#sheet .project-card-glass { position:absolute; z-index:2; left:8px; right:8px; bottom:8px; display:flex; flex-direction:column; gap:12px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(0,30,58,.84); backdrop-filter:blur(12px); }
+#sheet .project-card-copy { display:flex; flex-direction:column; gap:4px; padding:0 4px; min-width:0; }
+#sheet .project-card h3 { font-size:18px; line-height:24px; margin:0; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#sheet .project-card .project-subtitle { margin:0; font-size:12px!important; line-height:16px!important; color:rgba(255,255,255,.58); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#sheet .project-card .card-actions { padding:0; }
 #sheet .card-link { display:none; }
-#sheet .card-cta { flex:1; }
+#sheet .card-cta { flex:1; min-height:52px; display:flex; align-items:center; gap:8px; padding:0 8px 0 16px; border:0; border-radius:999px; background:#f9d371; color:#001e3a; font:inherit; font-weight:700; font-size:14px; text-align:left; }
+#sheet .card-cta span { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#sheet .card-cta i { display:grid; place-items:center; width:36px; height:36px; flex:none; border-radius:50%; background:#001e3a; color:#fff; font-style:normal; font-size:22px; line-height:1; }
 .sheet-details { padding:16px 20px 30px; }
 .sheet-details-inner { max-width:900px; margin:auto; }
 .sheet-eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; color:var(--muted); margin:0 0 10px; }

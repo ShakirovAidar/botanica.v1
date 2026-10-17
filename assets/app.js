@@ -370,11 +370,15 @@
           <img src="${esc(p.image || "assets/img/og-preview.jpg")}" alt="${esc(p.name)} villa" loading="lazy" draggable="false">
           <span class="place-tag${area ? "" : " tbc"}">${where}</span>
         </div>
-        <h3>${esc(p.name)}</h3>
-        <p class="project-subtitle">${esc(p.subtitle)}</p>
-        <div class="card-actions">
-          ${url ? `<a class="card-link" href="${url}" target="_blank" rel="noopener">Open in Maps</a>` : ""}
-          <button class="card-cta" type="button" data-reserve="${p.id}">${p.price == null ? "Request pricing" : price(p.price)}</button>
+        <div class="project-card-glass">
+          <div class="project-card-copy">
+            <h3>${esc(p.name)}</h3>
+            <p class="project-subtitle">${esc(p.subtitle)}</p>
+          </div>
+          <div class="card-actions">
+            ${url ? `<a class="card-link" href="${url}" target="_blank" rel="noopener">Open in Maps</a>` : ""}
+            <button class="card-cta" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request pricing" : `Reserve from ${price(p.price)}`}</span><i aria-hidden="true">↗</i></button>
+          </div>
         </div>
       </article>`;
     }).join("");
