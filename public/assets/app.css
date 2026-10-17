@@ -207,7 +207,9 @@ img {
   height: 40px;
   mask-image: url("figma/36eba.svg");
 }
-#app[data-screen="home"] .brand,
+#app[data-screen="home"] .brand-mark {
+  background: #fff;
+}
 #app[data-screen="success"] .brand {
   visibility: hidden;
 }
@@ -243,7 +245,6 @@ img {
   padding: 8px 12px;
   min-height: 56px;
 }
-.budget-option:first-child,
 .budget-option[aria-pressed="true"],
 .budget-option:hover {
   border-color: var(--accent);
@@ -257,7 +258,7 @@ img {
   background: var(--subtle);
   border-radius: 50%;
 }
-.budget-option:first-child .budget-icon {
+.budget-option[aria-pressed="true"] .budget-icon {
   background: var(--accent);
 }
 .budget-copy {
@@ -459,6 +460,8 @@ img {
 .stats {
   display: flex;
   margin-bottom: 16px;
+  background: transparent;
+  border: 0;
 }
 .stats > div {
   flex: 1;
@@ -595,9 +598,10 @@ img {
   bottom: calc(34px + env(safe-area-inset-bottom, 0px));
   left: 16px;
   right: 16px;
-  z-index: var(--z-footer);
+  z-index: 40;
   pointer-events: none;
 }
+#footer .tabbar { position: relative; z-index: 41; }
 #footer > * {
   pointer-events: auto;
 }
@@ -1382,13 +1386,13 @@ dialog::backdrop {
 /* Pins: a count bubble with the area name */
 .area-pin {
   position:absolute; left:0; top:0; transform:translate(-50%,-50%); font:inherit; cursor:pointer;
-  display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 4px; white-space:nowrap;
-  border-radius:999px; background:var(--surface); color:var(--ink);
-  box-shadow:0 3px 12px rgba(0,30,58,.28); border:1px solid var(--border); transition:transform .15s;
+  display:grid; place-items:center; width:30px; height:30px; padding:0; white-space:nowrap;
+  border-radius:999px; background:var(--accent); color:#001e3a;
+  box-shadow:0 4px 6px rgba(11,27,50,.18); border:2px solid var(--surface); transition:transform .15s;
 }
-.area-pin b { display:grid; place-items:center; min-width:24px; height:24px; border-radius:50%; background:var(--accent); color:#001e3a; font-size:12px; }
-.area-pin i { font-style:normal; font-size:12px; font-weight:600; }
-.area-pin.active { background:var(--active); color:var(--on-active); border-color:var(--active); transform:translate(-50%,-50%) scale(1.12); }
+.area-pin b { display:grid; place-items:center; min-width:0; height:auto; border-radius:50%; background:none; color:inherit; font-size:12px; }
+.area-pin i { display:none; }
+.area-pin.active { background:var(--best); color:#fff; border-color:var(--surface); transform:translate(-50%,-50%) scale(1.2); font-weight:700; }
 
 /* Bottom sheet with cards */
 #sheet:not([hidden]) {
@@ -1426,38 +1430,42 @@ dialog::backdrop {
 .area-pin:focus-visible { outline:3px solid #4a91e2; outline-offset:2px; }
 
 
-/* Warm translucent surfaces inspired by the reference pill. */
-#app[data-screen="home"] .hero-tag,
-#app[data-screen="home"] .hero-panel,
-#app[data-screen="home"] .stats,
-#app[data-screen="home"] .header-left,
-#app[data-screen="home"] .theme-toggle,
-.tabbar {
-  background: rgba(112, 103, 87, .64);
-  border: 1px solid rgba(255,255,255,.58);
-  -webkit-backdrop-filter: blur(18px) saturate(125%);
-  backdrop-filter: blur(18px) saturate(125%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
+/* Original Figma dark-mode surfaces. Keep the interaction model unchanged. */
+[data-theme="dark"] #app[data-screen="home"] .hero-tag,
+[data-theme="dark"] #app[data-screen="home"] .hero-panel,
+[data-theme="dark"] #app[data-screen="home"] .stats,
+[data-theme="dark"] .tabbar {
+  background: rgba(10, 34, 56, 0.52);
+  border-color: #2f5070;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: none;
 }
-#app[data-screen="home"] .hero-tag { color: #fff; }
-#app[data-screen="home"] .hero-panel { background: rgba(112,103,87,.48); }
-#app[data-screen="home"] .stats {
-  border-radius: 16px;
-  padding: 12px 4px;
-  margin-bottom: 12px;
-  color: #fff;
+[data-theme="dark"] #app[data-screen="home"] .hero-tag {
+  color: #f7f7f5;
 }
-#app[data-screen="home"] .header-left { border-radius: 999px; padding: 5px 12px; }
-#app[data-screen="home"] .header .brand-mark { background: #fff; }
-.tabbar button { color: #fff; }
-.tabbar button[aria-current="step"] { background: rgba(255,255,255,.92); color: #302c26; }
+[data-theme="dark"] #app[data-screen="home"] .hero-panel {
+  background: rgba(10, 34, 56, 0.52);
+}
+[data-theme="dark"] #app[data-screen="home"] .stats {
+  color: #f7f7f5;
+}
+[data-theme="dark"] .tabbar button {
+  color: #a6b3c2;
+}
+[data-theme="dark"] .tabbar button[aria-current="step"] {
+  background: #2f5070;
+  color: #f7f7f5;
+}
 @media (prefers-reduced-transparency: reduce) {
-  #app[data-screen="home"] .hero-tag,
-  #app[data-screen="home"] .hero-panel,
-  #app[data-screen="home"] .stats,
-  #app[data-screen="home"] .header-left,
-  #app[data-screen="home"] .theme-toggle,
-  .tabbar { background: #746b5e; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-theme="dark"] #app[data-screen="home"] .hero-tag,
+  [data-theme="dark"] #app[data-screen="home"] .hero-panel,
+  [data-theme="dark"] #app[data-screen="home"] .stats,
+  [data-theme="dark"] .tabbar {
+    background: #0a2238;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 /* Full-width interactive map bottom sheet */
@@ -1473,8 +1481,11 @@ dialog::backdrop {
 }
 #sheet[data-mode="full"]:not([hidden]) { height:100dvh; padding-top:env(safe-area-inset-top,0px); }
 #sheet .sheet-handle { display:block; width:48px; height:5px; margin:12px auto 10px; cursor:ns-resize; touch-action:none; flex:none; }
-#sheet #sheet-close { display:inline-flex; align-items:center; justify-content:center; }
-#sheet .sheet-header { position:sticky; top:0; z-index:2; padding:8px 20px 14px; background:var(--glass); backdrop-filter:blur(14px); }
+#sheet #sheet-close { display:none; }
+#sheet #sheet-expand { display:none; }
+#sheet .sheet-header { position:sticky; top:0; z-index:2; padding:8px 20px 14px; background:transparent; backdrop-filter:none; }
+[data-theme="dark"] #sheet:not([hidden]),
+[data-theme="dark"] #sheet .sheet-header { background:rgba(10,34,56,.52); }
 #sheet .sheet-header h2 { font-size:18px; }
 .sheet-controls { display:flex; align-items:center; gap:8px; }
 #sheet-expand { width:36px; height:36px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer; font-size:25px; line-height:1; }
@@ -1494,29 +1505,3 @@ dialog::backdrop {
 .sheet-inquire { margin-top:20px; border:0; border-radius:14px; width:100%; min-height:50px; background:var(--active); color:var(--on-active); font:inherit; font-weight:600; cursor:pointer; }
 @media(max-width:600px) { #sheet:not([hidden]) { height:42dvh; } .sheet-facts { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce) { #sheet:not([hidden]) { transition:none; } }
-
-/* Premium paper bottom sheet — opaque, no frosted glass. */
-#sheet:not([hidden]) {background:#f6f1e8!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:0!important;box-shadow:0 -10px 38px rgba(10,24,31,.14);padding-bottom:calc(90px + env(safe-area-inset-bottom,0px));}
-#sheet[data-mode="full"]:not([hidden]) {height:100dvh!important;}
-#sheet .sheet-handle {position:sticky;top:0;z-index:8;display:flex!important;align-items:center;justify-content:center;width:100%;height:38px;margin:0!important;background:#f6f1e8;touch-action:none;cursor:ns-resize;}
-#sheet .sheet-handle span {width:96px;height:9px;border-radius:99px;background:#30495b;display:block;}
-#sheet .sheet-header {background:#f6f1e8!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
-#sheet #sheet-expand {display:none!important;}
-#sheet .sheet-details {padding:20px clamp(18px,4vw,48px) 45px;background:#f6f1e8;}
-#sheet .editorial-paper {max-width:850px;margin:0 auto;padding:clamp(26px,5vw,64px);background:#fbf8f0;color:#342c24;box-shadow:0 3px 24px rgba(68,49,24,.08);border:1px solid #e7ddcc;position:relative;}
-#sheet .paper-brand {display:flex;align-items:center;flex-direction:column;gap:8px;text-align:center;font-family:Georgia,serif;font-size:21px;letter-spacing:.22em;}
-#sheet .paper-emblem {font-size:29px;color:#8d775a;}
-#sheet .paper-rule {height:1px;background:#d7c9b5;margin:26px auto 36px;max-width:180px;}
-#sheet .paper-kicker,#sheet .paper-section-label,#sheet .paper-footer {font-size:10px;letter-spacing:.22em;color:#8c7962;font-weight:600;}
-#sheet .editorial-paper h3 {font-family:Georgia,'Times New Roman',serif;font-size:clamp(32px,6vw,58px);font-weight:400;line-height:1.12;margin:12px 0 20px;color:#342c24;overflow-wrap:anywhere;}
-#sheet .paper-lead {font-family:Georgia,serif;font-size:clamp(19px,2.7vw,26px);line-height:1.55;color:#5c4b3b;}
-#sheet .paper-divider {display:flex;align-items:center;gap:16px;margin:32px 0;color:#a58e6d;}
-#sheet .paper-divider:before,#sheet .paper-divider:after {content:'';height:1px;background:#d9cbb8;flex:1;}
-#sheet .paper-body {font-size:15px;line-height:1.85;color:#655848;}
-#sheet .paper-facts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:30px 0;border-top:1px solid #dfd4c4;border-bottom:1px solid #dfd4c4;padding:24px 0;}
-#sheet .paper-facts>div {display:flex;flex-direction:column;gap:10px;min-width:0;}
-#sheet .paper-facts span {font-size:10px;letter-spacing:.09em;color:#9a866e;}
-#sheet .paper-facts strong {font-size:14px;font-weight:500;color:#342c24;overflow-wrap:anywhere;}
-#sheet .sheet-inquire {background:#263e4a;color:#fff;border-radius:2px;min-height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
-#sheet .paper-footer {text-align:center;margin-top:30px;}
-@media(max-width:600px){#sheet .paper-facts{grid-template-columns:1fr;gap:18px;}#sheet:not([hidden])[data-mode="peek"]{height:43dvh!important;}#sheet .sheet-details{padding:12px 16px 35px;}#sheet .editorial-paper{padding:26px 22px;}}

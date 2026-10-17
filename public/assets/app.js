@@ -136,22 +136,20 @@
     state.sheet = true;
     $("sheet-expand").setAttribute("aria-label", mode === "full" ? "Collapse details" : "Expand details");
     $("sheet-expand").textContent = mode === "full" ? "⌄" : "⌃";
-    $("sheet-handle").setAttribute("aria-expanded", String(mode === "full"));
     renderSheetDetails();
   }
-  const editorialCopy = {"botanica skyport": "Пять минут до международного аэропорта Пхукета.", "botanica grand avenue": "Виллы в сердце Банг Тао.", "botanica wisdom": "Всего 800 метров до международной школы UWC.", "botanica forestique": "Бутиковый проект рядом с Лаяном.", "botanica four seasons": "Тихая локация в районе Пру Джампа. Рассрочка: 70% в первые два года, оставшиеся 30% — ещё на два года под 3% годовых.", "botanica pru jampa": "Гибкая рассрочка 70/30: 70% в первые два года, оставшиеся 30% — ещё на два года под 3% годовых.", "botanica green boulevard": "The Grove прямо на территории посёлка: супермаркет Tops, винный магазин и рестораны.", "botanica louvre": "Камерный бутиковый проект всего из восьми вилл с уникальным дизайном.", "botanica montazure": "Горы и море. Всего пять минут до пляжа Камала.", "botanica karon": "Виллы с видом на море, всего пять минут до пляжа Карон.", "botanica modern loft ii": "Доступные виллы среди каучуковой рощи рядом с Blue Tree.", "botanica lakeside 2": "Виллы каскадом на возвышенности с видом на горы.", "botanica sky valley": "Ультрасовременные премиальные виллы в стиле Джеймса Бонда 007.", "botanica chalong bay": "Рядом с пирсом Чалонг — главным морским хабом для поездок на острова.", "gens by botanica": "Доступные кондоминиумы рядом с Blue Tree.", "hythe by botanica": "Элитные вертикальные виллы в сердце Банг Тао, рядом с Laguna Golf.", "botanica majestia": "Около 300 метров до British International School.", "botanica foresta ii": "Двухэтажные современные виллы среди зелени Лаяна.", "grand sea through": "Виллы с видом на море в районе Равай.", "kamala ocean valley": "Ультралюксовые виллы с видом на море, в пяти минутах от пляжа Камала.", "the verdant by botanica": "Камерный проект из семи вилл в Пру Джампа по доступной цене."};
-  editorialCopy["the verdant by botanica"] = "Камерный проект из семи вилл в Пру Джампа по доступной цене.";
   function renderSheetDetails() {
     const p = state.project;
     if (!p) { $("sheet-details").innerHTML = ""; return; }
     const area = areaOf(p);
-    const description = editorialCopy[p.name.toLowerCase()] || p.details || p.subtitle || "Проект Botanica на Пхукете.";
-    const facts = [
-      ["ТИП НЕДВИЖИМОСТИ", p.type || "Villa"],
-      ["РАСПОЛОЖЕНИЕ", area?.name || "Phuket"],
-      ["СТОИМОСТЬ", p.price == null ? "По запросу" : price(p.price)]
+    const items = [
+      ["Project", p.name],
+      ["Property type", p.type || "Villa"],
+      ["Location", area?.name || "Location to be confirmed"],
+      ["Price", p.price == null ? "On request" : price(p.price)],
+      ["Location accuracy", isExact(p) ? "Verified location" : "Approximate area / not confirmed"]
     ];
-    $("sheet-details").innerHTML = `<article class="editorial-paper"><div class="paper-brand"><span class="paper-emblem">✳</span><span>BOTANICA</span></div><div class="paper-rule"></div><p class="paper-kicker">THE COLLECTION · PHUKET</p><h3>${esc(p.name)}</h3><p class="paper-lead">${esc(description)}</p><div class="paper-divider"><span>✦</span></div><p class="paper-section-label">О ПРОЕКТЕ</p><p class="paper-body">${esc(description)}</p><div class="paper-facts">${facts.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Узнать подробнее <span aria-hidden="true">↗</span></button><p class="paper-footer">BOTANICA · PHUKET, THAILAND</p></article>`;
+    $("sheet-details").innerHTML = `<div class="sheet-details-inner"><p class="sheet-eyebrow">PROJECT OVERVIEW</p><h3>${esc(p.name)}</h3><p class="sheet-description">${esc(p.details || p.subtitle || "Explore this Botanica development in Phuket.")}</p><div class="sheet-facts">${items.map(([k,v]) => `<div><span>${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Enquire about this project →</button></div>`;
   }
   function closeSheet(restore = false) {
     state.sheet = false;
@@ -462,21 +460,19 @@
     if (b && !b.disabled) go(b.dataset.step);
   });
   $("sheet-close").addEventListener("click", () => closeSheet(true));
-  $("sheet-expand").hidden = true;
+  $("sheet-expand").addEventListener("click", () => setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"));
   const handle = $("sheet-handle");
-  let startY = null, draggedHandle = false;
-  handle.addEventListener("pointerdown", e => { draggedHandle = false; startY = e.clientY; handle.setPointerCapture(e.pointerId); });
+  let startY = null;
+  handle.addEventListener("pointerdown", e => { startY = e.clientY; handle.setPointerCapture(e.pointerId); });
   handle.addEventListener("pointerup", e => {
     if (startY === null) return;
     const delta = e.clientY - startY;
-    draggedHandle = Math.abs(delta) > 12;
     startY = null;
-    if (!draggedHandle) { setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"); return; }
     if (delta < -45) setSheetMode("full");
     else if (delta > 90 && $("sheet").dataset.mode === "peek") closeSheet();
     else if (delta > 45) setSheetMode("peek");
   });
-  handle.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"); } });
+  handle.addEventListener("click", () => setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"));
   $("channels").addEventListener("click", (e) => {
     const b = e.target.closest("[data-channel]");
     if (!b) return;
