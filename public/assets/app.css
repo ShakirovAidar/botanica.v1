@@ -1512,7 +1512,7 @@ dialog::backdrop {
 #sheet .project-card-media::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,30,58,.08) 20%,rgba(0,30,58,.04) 42%,rgba(0,30,58,.32) 100%); pointer-events:none; }
 #sheet .project-card-media .place-tag { position:absolute; left:12px; top:12px; z-index:2; padding:7px 12px; background:rgba(0,30,58,.58); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(10px); color:#fff; }
 #sheet .project-card.selected { outline:2px solid var(--accent); outline-offset:-2px; }
-#sheet .project-card-glass { position:absolute; z-index:2; left:8px; right:8px; bottom:8px; display:flex; flex-direction:column; gap:12px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(0,30,58,.84); backdrop-filter:blur(12px); }
+#sheet .project-card-glass { position:absolute; z-index:2; left:8px; right:8px; bottom:8px; display:flex; flex-direction:column; gap:8px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(0,30,58,.84); backdrop-filter:blur(12px); }
 #sheet .project-card-copy { display:flex; flex-direction:column; gap:4px; padding:0 4px; min-width:0; }
 #sheet .project-card h3 { font-size:18px; line-height:24px; margin:0; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #sheet .project-card .project-subtitle { margin:0; font-size:12px!important; line-height:16px!important; color:rgba(255,255,255,.58); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -1520,7 +1520,8 @@ dialog::backdrop {
 #sheet .card-link { display:none; }
 #sheet .card-cta { flex:1; min-height:52px; display:flex; align-items:center; gap:8px; padding:0 8px 0 16px; border:0; border-radius:999px; background:#f9d371; color:#001e3a; font:inherit; font-weight:700; font-size:14px; text-align:left; }
 #sheet .card-cta span { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#sheet .card-cta i { display:grid; place-items:center; width:36px; height:36px; flex:none; border-radius:50%; background:#001e3a; color:#fff; font-style:normal; font-size:22px; line-height:1; }
+#sheet .card-cta i { display:grid; place-items:center; width:36px; height:36px; flex:none; border-radius:50%; background:#001e3a; color:#fff; font-style:normal; }
+#sheet .card-cta i svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
 .sheet-details { padding:16px 20px 30px; }
 .sheet-details-inner { max-width:900px; margin:auto; }
 .sheet-eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; color:var(--muted); margin:0 0 10px; }
@@ -1528,7 +1529,8 @@ dialog::backdrop {
 .sheet-description { font-size:14px; line-height:1.6; color:var(--muted); margin:0 0 20px; }
 .sheet-facts { display:flex; flex-direction:column; gap:8px; }
 .sheet-facts>div { display:grid; grid-template-columns:34px minmax(110px, 0.7fr) minmax(0, 1.4fr); align-items:center; gap:12px; min-height:58px; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
-.sheet-fact-icon { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--subtle); color:var(--active); font-size:17px; font-weight:700; }
+.sheet-fact-icon { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--subtle); color:var(--active); }
+.sheet-fact-icon svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .sheet-fact-label { color:var(--muted); font-size:13px; }
 .sheet-facts strong { color:var(--ink); font-size:14px; overflow-wrap:anywhere; }
 .sheet-inquire { margin-top:20px; border:0; border-radius:14px; width:100%; min-height:50px; background:var(--active); color:var(--on-active); font:inherit; font-weight:600; cursor:pointer; }

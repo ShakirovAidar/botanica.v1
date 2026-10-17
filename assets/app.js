@@ -166,14 +166,24 @@
     const p = state.project;
     if (!p) { $("sheet-details").innerHTML = ""; return; }
     const area = areaOf(p);
+    const lucideIcon = (name) => {
+      const paths = {
+        home: '<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/>',
+        tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.828 8.828a2 2 0 0 0 2.828 0l7.172-7.172a2 2 0 0 0 0-2.828z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+        pin: '<circle cx="12" cy="10" r="3"/><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/>',
+        circle: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/>',
+        check: '<path d="m5 12 4 4L19 6"/>'
+      };
+      return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name]}</svg>`;
+    };
     const items = [
-      ["⌂", "Project", p.name],
-      ["◆", "Property type", p.type || "Villa"],
-      ["⌖", "Location", area?.name || "Location to be confirmed"],
-      ["฿", "Price", p.price == null ? "On request" : price(p.price)],
-      ["✓", "Location accuracy", isExact(p) ? "Verified location" : "Approximate area / not confirmed"]
+      ["home", "Project", p.name],
+      ["tag", "Property type", p.type || "Villa"],
+      ["pin", "Location", area?.name || "Location to be confirmed"],
+      ["circle", "Price", p.price == null ? "On request" : price(p.price)],
+      ["check", "Location accuracy", isExact(p) ? "Verified location" : "Approximate area / not confirmed"]
     ];
-    $("sheet-details").innerHTML = `<div class="sheet-details-inner"><p class="sheet-eyebrow">PROJECT OVERVIEW</p><h3>${esc(p.name)}</h3><p class="sheet-description">${esc(p.details || p.subtitle || "Explore this Botanica development in Phuket.")}</p><div class="sheet-facts">${items.map(([icon,k,v]) => `<div><span class="sheet-fact-icon" aria-hidden="true">${icon}</span><span class="sheet-fact-label">${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Enquire about this project →</button></div>`;
+    $("sheet-details").innerHTML = `<div class="sheet-details-inner"><p class="sheet-eyebrow">PROJECT OVERVIEW</p><h3>${esc(p.name)}</h3><p class="sheet-description">${esc(p.details || p.subtitle || "Explore this Botanica development in Phuket.")}</p><div class="sheet-facts">${items.map(([icon,k,v]) => `<div><span class="sheet-fact-icon">${lucideIcon(icon)}</span><span class="sheet-fact-label">${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Enquire about this project →</button></div>`;
   }
   function closeSheet(restore = false) {
     state.sheet = false;
@@ -377,7 +387,7 @@
           </div>
           <div class="card-actions">
             ${url ? `<a class="card-link" href="${url}" target="_blank" rel="noopener">Open in Maps</a>` : ""}
-            <button class="card-cta" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request pricing" : `Reserve from ${price(p.price)}`}</span><i aria-hidden="true">↗</i></button>
+            <button class="card-cta" type="button" data-reserve="${p.id}"><span>${p.price == null ? "Request pricing" : `Reserve ${price(p.price)}`}</span><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></i></button>
           </div>
         </div>
       </article>`;
