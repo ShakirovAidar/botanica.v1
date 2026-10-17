@@ -379,6 +379,11 @@
     state.project = p;
     renderNavigation();
     renderSheetDetails();
+    requestAnimationFrame(() => {
+      const card = $("cards").querySelector(`[data-card="${CSS.escape(id)}"]`);
+      if (!card) return;
+      $("cards").scrollTo({ left: Math.max(0, card.offsetLeft - 20), behavior: reducedMotion() ? "auto" : "smooth" });
+    });
   }
   function selectBudget(id) {
     state.budget = budgets().find((b) => b.id === id);
