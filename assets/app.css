@@ -55,6 +55,18 @@
 * {
   box-sizing: border-box;
 }
+/* Prevent casual copying of the interface while keeping form fields usable. */
+body,
+body * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
 html,
 body {
   margin: 0;
@@ -207,11 +219,17 @@ img {
   height: 40px;
   mask-image: url("figma/36eba.svg");
 }
-#app[data-screen="home"] .brand-mark {
-  background: #fff;
+#app[data-screen="home"] .brand {
+  visibility: hidden;
 }
 #app[data-screen="success"] .brand {
   visibility: hidden;
+}
+[data-theme="light"] .brand-mark {
+  background: var(--ink);
+}
+[data-theme="dark"] .brand-mark {
+  background: var(--accent);
 }
 .content-screen {
   height: 100%;
@@ -1401,6 +1419,7 @@ dialog::backdrop {
   background:var(--glass); backdrop-filter:blur(14px);
   border:1px solid var(--glass-line); box-shadow:0 10px 30px rgba(0,30,58,.18);
 }
+#sheet.is-dragging { transition:none!important; user-select:none; }
 #sheet .sheet-handle, #sheet #sheet-close { display:none; }
 #sheet .sheet-header { padding:14px 18px 8px; margin:0; }
 #sheet .sheet-header h2 { font-size:15px; line-height:20px; }

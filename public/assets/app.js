@@ -2,6 +2,26 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
+  const editableTarget = (target) =>
+    target instanceof Element &&
+    (target.matches("input, textarea, [contenteditable=\"true\"]") ||
+      Boolean(target.closest("input, textarea, [contenteditable=\"true\"]")));
+  document.addEventListener("contextmenu", (event) => {
+    if (!editableTarget(event.target)) event.preventDefault();
+  });
+  document.addEventListener("copy", (event) => {
+    if (!editableTarget(event.target)) event.preventDefault();
+  });
+  document.addEventListener("cut", (event) => {
+    if (!editableTarget(event.target)) event.preventDefault();
+  });
+  document.addEventListener("dragstart", (event) => event.preventDefault());
+  document.addEventListener("keydown", (event) => {
+    if (!event.ctrlKey && !event.metaKey) return;
+    if (["c", "x", "a", "u", "s"].includes(event.key.toLowerCase()) && !editableTarget(event.target)) {
+      event.preventDefault();
+    }
+  });
   const PROJECTS = window.BOTANICA_PROJECTS;
   const budgets = () => [
     {id:"entry",min:14.9,max:30,label:"THB 14.9M–30M"},
@@ -462,17 +482,38 @@
   $("sheet-close").addEventListener("click", () => closeSheet(true));
   $("sheet-expand").addEventListener("click", () => setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"));
   const handle = $("sheet-handle");
+  const sheet = $("sheet");
   let startY = null;
-  handle.addEventListener("pointerdown", e => { startY = e.clientY; handle.setPointerCapture(e.pointerId); });
-  handle.addEventListener("pointerup", e => {
+  let startHeight = 0;
+  const stopSheetDrag = (e) => {
     if (startY === null) return;
     const delta = e.clientY - startY;
+    const height = sheet.getBoundingClientRect().height;
+    const viewport = window.innerHeight;
     startY = null;
-    if (delta < -45) setSheetMode("full");
-    else if (delta > 90 && $("sheet").dataset.mode === "peek") closeSheet();
-    else if (delta > 45) setSheetMode("peek");
+    sheet.classList.remove("is-dragging");
+    sheet.releasePointerCapture?.(e.pointerId);
+    sheet.style.height = "";
+    if (delta > 120 && sheet.dataset.mode === "peek") return closeSheet();
+    if (delta < -45 || height > viewport * 0.68) return setSheetMode("full");
+    setSheetMode("peek");
+  };
+  handle.addEventListener("pointerdown", e => {
+    if (sheet.hidden) return;
+    startY = e.clientY;
+    startHeight = sheet.getBoundingClientRect().height;
+    sheet.classList.add("is-dragging");
+    sheet.setPointerCapture(e.pointerId);
+    e.preventDefault();
   });
-  handle.addEventListener("click", () => setSheetMode($("sheet").dataset.mode === "full" ? "peek" : "full"));
+  sheet.addEventListener("pointermove", e => {
+    if (startY === null) return;
+    const next = Math.max(120, Math.min(window.innerHeight, startHeight - (e.clientY - startY)));
+    sheet.style.height = `${next}px`;
+    e.preventDefault();
+  });
+  sheet.addEventListener("pointerup", stopSheetDrag);
+  sheet.addEventListener("pointercancel", stopSheetDrag);
   $("channels").addEventListener("click", (e) => {
     const b = e.target.closest("[data-channel]");
     if (!b) return;
