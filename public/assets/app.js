@@ -167,13 +167,13 @@
     if (!p) { $("sheet-details").innerHTML = ""; return; }
     const area = areaOf(p);
     const items = [
-      ["Project", p.name],
-      ["Property type", p.type || "Villa"],
-      ["Location", area?.name || "Location to be confirmed"],
-      ["Price", p.price == null ? "On request" : price(p.price)],
-      ["Location accuracy", isExact(p) ? "Verified location" : "Approximate area / not confirmed"]
+      ["⌂", "Project", p.name],
+      ["◆", "Property type", p.type || "Villa"],
+      ["⌖", "Location", area?.name || "Location to be confirmed"],
+      ["฿", "Price", p.price == null ? "On request" : price(p.price)],
+      ["✓", "Location accuracy", isExact(p) ? "Verified location" : "Approximate area / not confirmed"]
     ];
-    $("sheet-details").innerHTML = `<div class="sheet-details-inner"><p class="sheet-eyebrow">PROJECT OVERVIEW</p><h3>${esc(p.name)}</h3><p class="sheet-description">${esc(p.details || p.subtitle || "Explore this Botanica development in Phuket.")}</p><div class="sheet-facts">${items.map(([k,v]) => `<div><span>${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Enquire about this project →</button></div>`;
+    $("sheet-details").innerHTML = `<div class="sheet-details-inner"><p class="sheet-eyebrow">PROJECT OVERVIEW</p><h3>${esc(p.name)}</h3><p class="sheet-description">${esc(p.details || p.subtitle || "Explore this Botanica development in Phuket.")}</p><div class="sheet-facts">${items.map(([icon,k,v]) => `<div><span class="sheet-fact-icon" aria-hidden="true">${icon}</span><span class="sheet-fact-label">${esc(k)}</span><strong>${esc(String(v))}</strong></div>`).join("")}</div><button class="sheet-inquire" type="button" data-reserve="${esc(p.id)}">Enquire about this project →</button></div>`;
   }
   function closeSheet(restore = false) {
     state.sheet = false;

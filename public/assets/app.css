@@ -1521,10 +1521,11 @@ dialog::backdrop {
 .sheet-eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; color:var(--muted); margin:0 0 10px; }
 .sheet-details h3 { font-size:clamp(22px,3vw,32px); line-height:1.2; margin:0 0 10px; color:var(--ink); }
 .sheet-description { font-size:14px; line-height:1.6; color:var(--muted); margin:0 0 20px; }
-.sheet-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-.sheet-facts>div { padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:14px; display:flex; flex-direction:column; gap:7px; }
-.sheet-facts span { color:var(--muted); font-size:12px; }
+.sheet-facts { display:flex; flex-direction:column; gap:8px; }
+.sheet-facts>div { display:grid; grid-template-columns:34px minmax(110px, 0.7fr) minmax(0, 1.4fr); align-items:center; gap:12px; min-height:58px; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+.sheet-fact-icon { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--subtle); color:var(--active); font-size:17px; font-weight:700; }
+.sheet-fact-label { color:var(--muted); font-size:13px; }
 .sheet-facts strong { color:var(--ink); font-size:14px; overflow-wrap:anywhere; }
 .sheet-inquire { margin-top:20px; border:0; border-radius:14px; width:100%; min-height:50px; background:var(--active); color:var(--on-active); font:inherit; font-weight:600; cursor:pointer; }
-@media(max-width:600px) { #sheet:not([hidden]) { height:42dvh; } .sheet-facts { grid-template-columns:1fr; } }
+@media(max-width:600px) { #sheet:not([hidden]) { height:42dvh; } .sheet-facts>div { grid-template-columns:32px minmax(92px, .7fr) minmax(0, 1.3fr); gap:10px; } }
 @media(prefers-reduced-motion:reduce) { #sheet:not([hidden]) { transition:none; } }
