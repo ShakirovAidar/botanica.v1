@@ -1502,17 +1502,17 @@ dialog::backdrop {
 #sheet .cards { padding:4px 20px 14px; scroll-padding-left:20px; touch-action:pan-x; cursor:grab; }
 #sheet .cards:active { cursor: grabbing; }
 #sheet .project-card {
-  position:relative; flex:0 0 min(296px,82vw); height:268px; padding:0;
-  scroll-snap-align:start; background:#9caf9b; color:#fff; border:0;
-  display:block; overflow:hidden;
+  position:relative; flex:0 0 min(296px,82vw); height:auto; padding:0;
+  scroll-snap-align:start; background:transparent; color:#fff; border:0;
+  display:block; overflow:visible;
   cursor:pointer;
 }
-#sheet .project-card-media { position:absolute; inset:0; overflow:hidden; }
+#sheet .project-card-media { position:relative; width:100%; aspect-ratio:4 / 3; overflow:hidden; border-radius:24px; background:#9caf9b; }
 #sheet .project-card-media img { display:block; width:100%; height:100%; object-fit:cover; }
 #sheet .project-card-media::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,30,58,.08) 20%,rgba(0,30,58,.04) 42%,rgba(0,30,58,.32) 100%); pointer-events:none; }
 #sheet .project-card-media .place-tag { position:absolute; left:12px; top:12px; z-index:2; padding:7px 12px; background:rgba(0,30,58,.58); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(10px); color:#fff; }
 #sheet .project-card.selected { outline:2px solid var(--accent); outline-offset:-2px; }
-#sheet .project-card-glass { position:absolute; z-index:2; left:8px; right:8px; bottom:8px; display:flex; flex-direction:column; gap:8px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(0,30,58,.84); backdrop-filter:blur(12px); }
+#sheet .project-card-glass { position:relative; z-index:2; left:auto; right:auto; bottom:auto; display:flex; flex-direction:column; gap:8px; margin-top:10px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(0,30,58,.96); }
 #sheet .project-card-copy { display:flex; flex-direction:column; gap:4px; padding:0 4px; min-width:0; }
 #sheet .project-card h3 { font-size:18px; line-height:24px; margin:0; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #sheet .project-card .project-subtitle { margin:0; font-size:12px!important; line-height:16px!important; color:rgba(255,255,255,.58); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -1533,6 +1533,9 @@ dialog::backdrop {
 .sheet-fact-icon svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .sheet-fact-label { color:var(--muted); font-size:13px; }
 .sheet-facts strong { color:var(--ink); font-size:14px; overflow-wrap:anywhere; }
-.sheet-inquire { margin-top:20px; border:0; border-radius:14px; width:100%; min-height:50px; background:var(--active); color:var(--on-active); font:inherit; font-weight:600; cursor:pointer; }
+.sheet-inquire { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:20px; padding:0 10px 0 24px; border:0; border-radius:14px; width:100%; min-height:64px; background:var(--active); color:var(--on-active); font:inherit; font-weight:600; cursor:pointer; text-align:left; }
+.sheet-inquire span { flex:1; text-align:center; }
+.sheet-inquire i { display:grid; place-items:center; width:42px; height:42px; flex:none; border-radius:50%; background:#001e3a; color:#fff; font-style:normal; }
+.sheet-inquire i svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
 @media(max-width:600px) { #sheet:not([hidden]) { height:42dvh; } .sheet-facts>div { grid-template-columns:32px minmax(92px, .7fr) minmax(0, 1.3fr); gap:10px; } }
 @media(prefers-reduced-motion:reduce) { #sheet:not([hidden]) { transition:none; } }
