@@ -28,19 +28,7 @@
     {id:"mid",min:30,max:70,label:"THB 30M–70M"},
     {id:"premium",min:70,max:250,label:"THB 70M–250M"}
   ];
-  const channels = ["Telegram", "WhatsApp", "Instagram", "Facebook"];
-  const channelKeys = [
-    "imgIconTelegram",
-    "imgIconWhatsapp",
-    "imgIconInstagram",
-    "imgIconFacebook",
-  ];
-  const placeholders = {
-    Telegram: "@username or phone number",
-    WhatsApp: "+66…",
-    Instagram: "@username",
-    Facebook: "Profile link or name",
-  };
+  const WHATSAPP_NUMBER = "66808316777";
   const slides = ["23d80.png", "a7387.png", "31222.png"];
   const readTheme = () => {
     try {
@@ -61,8 +49,6 @@
     screen: "home",
     budget: {id:"all",label:"Browse All Projects"},
     project: null,
-    channel: "Telegram",
-    contacts: {},
     list: PROJECTS.slice(),
     sheet: false,
     slide: 0,
@@ -218,7 +204,6 @@
     }
     if (screen === "contact") {
       renderRecap();
-      renderChannels();
     }
     if (focus) {
       const title = $(screen).querySelector("h1");
@@ -417,31 +402,13 @@
     renderCards();
     go("map");
   }
-  function renderChannels() {
-    $("channels").innerHTML = channels
-      .map((channel, i) => {
-        const selected = state.channel === channel;
-        // Telegram in both Figma modes is white; inactive messenger glyphs differ.
-        const set =
-          state.theme === "light" && selected
-            ? window.FIGMA_ASSETS.dark.contact
-            : assets().contact;
-        return `<button type="button" class="channel" data-channel="${channel}" aria-label="${channel}" aria-pressed="${selected}">${img(set[channelKeys[i]], 22)}</button>`;
-      })
-      .join("");
-    $("contact-label").textContent = state.channel;
-    $("contact-value").placeholder = placeholders[state.channel];
-    $("contact-value").inputMode =
-      state.channel === "WhatsApp" ? "tel" : "text";
-    $("contact-value").value = state.contacts[state.channel] || "";
-  }
   function renderRecap() {
     const p = state.project;
     $("recap").innerHTML =
       (p.image
         ? `<img class="recap-image" src="${p.image}" alt="${p.name} villa">`
         : "") +
-      `<div class="recap-glass"><p class="recap-title">YOUR SELECTION</p><div class="recap-row"><span>Budget</span><strong>${budgetLabel(state.budget)}</strong></div><div class="recap-row"><span>Project</span><strong>${p.name} · ${price(p.price)}</strong></div></div>`;
+      `<div class="recap-glass"><p class="recap-title">ВАШ ВЫБОР</p><div class="recap-row"><span>Локация</span><strong>${areaOf(p)?.name || "Не указана"}</strong></div><div class="recap-row"><span>Бюджет</span><strong>${budgetLabel(state.budget)}</strong></div></div>`;
   }
   function applyTheme(theme) {
     state.theme = theme;
@@ -466,8 +433,6 @@
     $("stats").innerHTML = stats
       .map(([a, b]) => `<div><strong>${a}</strong><small>${b}</small></div>`)
       .join("");
-    $("consent-copy").textContent =
-      "I agree to the processing of personal data";
     if (state.budget) {
       const available = budgets();
       state.budget = available.find(b => b.id === state.budget.id) || {id:"all",label:"Browse All Projects"};
@@ -479,10 +444,7 @@
     renderBudgets();
     renderFaq();
     renderNavigation();
-    if (state.screen === "contact") {
-      renderRecap();
-      renderChannels();
-    }
+    if (state.screen === "contact") renderRecap();
   }
   $("theme-toggle").addEventListener("click", () =>
     applyTheme(state.theme === "light" ? "dark" : "light"),
@@ -554,19 +516,6 @@
     cards.scrollLeft = next;
     e.preventDefault();
   }, { passive: false });
-  $("channels").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-channel]");
-    if (!b) return;
-    state.contacts[state.channel] = $("contact-value").value;
-    state.channel = b.dataset.channel;
-    renderChannels();
-    $("contact-value").focus({ preventScroll: true });
-  });
-  $("contact-value").addEventListener("input", () => {
-    state.contacts[state.channel] = $("contact-value").value;
-    $("contact-value").removeAttribute("aria-invalid");
-    $("form-error").textContent = "";
-  });
   $("cards").addEventListener("click", (e) => {
     const card = e.target.closest("[data-card]");
     if (card && !e.target.closest("[data-reserve]")) { selectProject(card.dataset.card); renderCards(); }
@@ -587,108 +536,25 @@
     selectArea(c.dataset.area);
   });
   // MapLibre uses its own built-in controls.
-  $("contact-form").addEventListener("submit", async (e) => {
+  $("contact-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const contactValue = $("contact-value").value.trim();
-    if (
-      contactValue.length < 3 ||
-      (state.channel === "WhatsApp" &&
-        contactValue.replace(/\D/g, "").length < 7)
-    ) {
-      $("form-error").textContent =
-        state.channel === "WhatsApp"
-          ? "Enter a phone number including the country code."
-          : `Enter your ${state.channel} contact (at least 3 characters).`;
-      $("contact-value").setAttribute("aria-invalid", "true");
-      $("contact-value").focus();
-      return;
-    }
-    if (!$("consent").checked) {
-      $("form-error").textContent =
-        "Please agree to the data processing terms to continue.";
-      $("consent").focus();
-      return;
-    }
-    $("form-error").textContent = "";
-    state.request = {
-      budget: budgetLabel(state.budget),
-      project: state.project.name,
-      price: price(state.project.price),
-      projectId: state.project.id,
-      subtitle: state.project.subtitle,
-      channel: state.channel,
-      contact: contactValue,
-      language: "en",
-      consent: true,
-    };
-    const submit = $("submit");
-    submit.disabled = true;
-    submit.textContent = "Sending…";
-    try {
-      const response = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state.request),
-      });
-      if (!response.ok) throw new Error("CRM request failed");
-    } catch {
-      $("form-error").textContent =
-        "We could not send your request. Please try again.";
-      submit.disabled = false;
-      submit.textContent = "Send Request";
-      return;
-    }
-    submit.disabled = false;
-    submit.textContent = "Send Request";
-    const summary = $("summary");
-    summary.replaceChildren();
-    for (const [label, value] of [
-      ["Budget", state.request.budget],
-      ["Project", `${state.request.project} · ${state.request.price}`],
-      ["Contact", `${state.channel}: ${contactValue}`],
-    ]) {
-      const row = document.createElement("div"),
-        dt = document.createElement("dt"),
-        dd = document.createElement("dd");
-      dt.textContent = label;
-      dd.textContent = value;
-      row.append(dt, dd);
-      summary.append(row);
-    }
-    $("copy-status").textContent = "";
-    const messengerUrls = {
-      Telegram: "https://web.telegram.org/",
-      WhatsApp: "https://web.whatsapp.com/",
-      Instagram: "https://www.instagram.com/",
-      Facebook: "https://www.facebook.com/messages/",
-    };
-    $("open-messenger").href = messengerUrls[state.channel];
-    $("open-messenger").querySelector("span").textContent =
-      `Open ${state.channel}`;
-    go("success");
-  });
-  $("copy-request").addEventListener("click", async () => {
-    const text = Object.entries(state.request || {})
-      .map(([key, value]) => `${key}: ${value}`)
-      .join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      $("copy-status").textContent = "Request copied.";
-    } catch {
-      $("copy-status").textContent =
-        "Copy is unavailable here. Select the request details above to copy them.";
-    }
+    const location = areaOf(state.project)?.name || "Не указана";
+    const budget = budgetLabel(state.budget);
+    const message = `Здравствуйте!\n\nЛокация: ${location}\nБюджет: ${budget}`;
+    state.request = { location, budget };
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   });
   $("restart").addEventListener("click", () => {
     state.budget = {id:"all",label:"Browse All Projects"};
     state.project = null;
     state.request = null;
     state.list = PROJECTS.slice();
-    state.contacts = {};
-    state.channel = "Telegram";
     $("contact-form").reset();
     $("form-error").textContent = "";
-    $("contact-value").removeAttribute("aria-invalid");
     renderBudgets();
     go("home");
   });

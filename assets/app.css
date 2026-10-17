@@ -639,6 +639,11 @@ img {
 #submit {
   margin-bottom: 12px;
 }
+#app[data-screen="contact"] #submit {
+  background: #25d366;
+  border-color: #25d366;
+  color: #071b10;
+}
 .tabbar {
   display: flex;
   gap: 4px;

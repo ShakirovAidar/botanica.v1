@@ -491,30 +491,9 @@
           aria-labelledby="contact-title"
           hidden
         >
-          <h1 id="contact-title">Where to Send Your Selection?</h1>
-          <p class="subtitle">Choose your preferred contact method</p>
+          <h1 id="contact-title">Напишите в WhatsApp</h1>
+          <p class="subtitle">Отправьте выбранные параметры специалисту</p>
           <form id="contact-form" novalidate>
-            <fieldset class="messenger-field">
-              <legend class="sr-only">Preferred contact method</legend>
-              <div id="channels" class="channels"></div>
-            </fieldset>
-            <div class="contact-field">
-              <label for="contact-value" id="contact-label">Telegram</label
-              ><input
-                id="contact-value"
-                name="contact"
-                type="text"
-                autocomplete="off"
-                placeholder="@username or phone number"
-                aria-describedby="form-error"
-              />
-            </div>
-            <label class="consent"
-              ><input id="consent" name="consent" type="checkbox" /><span
-                id="consent-copy"
-                >I agree to the processing of personal data</span
-              ></label
-            >
             <p id="form-error" class="form-error" role="alert"></p>
             <div id="recap" class="recap"></div>
           </form>
@@ -532,25 +511,11 @@
               ><img src="assets/figma/7e638.svg" alt="" width="24" height="24"
             /></span>
             <h1 id="success-title">Request Prepared</h1>
-            <p id="success-message">Your villa selection request is ready.</p>
-            <p class="prototype-note">
-              Prototype preview — your request has not been sent.
-            </p>
+            <p id="success-message">Откройте WhatsApp, чтобы отправить заявку.</p>
             <dl id="summary" class="summary"></dl>
             <button id="restart" class="button primary" type="button">
-              <span>Back to Home</span
-              ><span class="button-arrow"></span></button
-            ><a
-              id="open-messenger"
-              class="button secondary"
-              href="https://web.telegram.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>Open Telegram</span><span class="button-arrow"></span> </a
-            ><button id="copy-request" class="copy-link" type="button">
-              Copy Request</button
-            ><span id="copy-status" role="status"></span>
+              <span>Back to Home</span><span class="button-arrow"></span>
+            </button>
           </div>
         </section>
       </main>
@@ -562,7 +527,7 @@
           form="contact-form"
           hidden
         >
-          <span>Submit</span><span class="button-arrow"></span>
+          <span>Напишите в WhatsApp</span><span class="button-arrow"></span>
         </button>
         <nav class="tabbar" aria-label="Booking steps">
           <button type="button" data-step="budget">
