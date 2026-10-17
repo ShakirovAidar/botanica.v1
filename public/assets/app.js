@@ -41,7 +41,7 @@
     Instagram: "@username",
     Facebook: "Profile link or name",
   };
-  const slides = ["23d80.png", "a7387.png", "31222.png", "f9474.png"];
+  const slides = ["23d80.png", "a7387.png", "31222.png"];
   const readTheme = () => {
     try {
       return localStorage.getItem("50lemons-theme");
@@ -691,7 +691,7 @@
   });
   gallery.addEventListener("scroll", () => {
     state.slide = Math.round(gallery.scrollLeft / gallery.clientWidth);
-    $("slide-count").textContent = `0${state.slide + 1} / 04`;
+    $("slide-count").textContent = `0${state.slide + 1} / 03`;
     dots
       .querySelectorAll("button")
       .forEach((b, i) => b.setAttribute("aria-pressed", i === state.slide));
