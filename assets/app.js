@@ -23,10 +23,14 @@
     }
   });
   const PROJECTS = window.BOTANICA_PROJECTS;
+  const mapEdit = new URLSearchParams(location.search).get("mapEdit") === "1" || (() => {
+    try { return window.parent !== window && new URLSearchParams(window.parent.location.search).get("mapEdit") === "1"; }
+    catch { return false; }
+  })();
   const budgets = () => [
-    {id:"entry",min:14.9,max:30,label:"THB 14.9M–30M"},
-    {id:"mid",min:30,max:70,label:"THB 30M–70M"},
-    {id:"premium",min:70,max:250,label:"THB 70M–250M"}
+    {id:"entry",min:14.9,max:30,label:"THB 14.9M–30M",exampleId:"wisdom"},
+    {id:"mid",min:30,max:70,label:"THB 30M–70M",exampleId:"montazure"},
+    {id:"premium",min:70,max:250,label:"THB 70M–250M",exampleId:"sky-valley"}
   ];
   const WHATSAPP_NUMBER = "66808316777";
   const slides = ["23d80.png", "a7387.png", "31222.png"];
@@ -71,10 +75,10 @@
   function projectKind(p) { return ""; }
   function renderBudgets() {
     $("budgets").innerHTML = budgets()
-      .map(
-        (b, i) =>
-          `<button class="budget-option" type="button" data-budget="${b.id}" aria-pressed="${state.budget?.id === b.id}" ><span class="budget-icon">${img(i === 0 ? assets().budget.imgIconPalmtree : assets().budget.imgIconPalmtree1)}</span><span class="budget-copy"><strong>${budgetLabel(b)}</strong><small>${inBudget(b).length} projects on the map</small></span><span class="budget-arrow">${img(assets().budget.imgIconArrowRight, 16)}</span></button>`,
-      )
+      .map((b) => {
+        const example = PROJECTS.find((p) => p.id === b.exampleId);
+        return `<button class="budget-option" type="button" data-budget="${b.id}" aria-label="View all ${esc(b.label)} options on the map" aria-pressed="${state.budget?.id === b.id}"><img class="budget-photo" src="${esc(example.image)}" alt="" width="140" height="140"><span class="budget-copy"><strong>${esc(example.name)}</strong><span class="budget-price">${esc(price(example.price))}</span><span class="budget-map-hint">View all options in this budget on the map</span><small>${esc(b.label)}</small></span><span class="budget-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7 17 17 7M8 7h9v9"/></svg></span></button>`;
+      })
       .join("");
   }
   function renderFaq() {
@@ -217,6 +221,19 @@
   const AREAS = window.BOTANICA_AREAS || [];
   const areaOf = (p) => AREAS.find((a) => a.projects.includes(p.id)) || null;
   const isExact = (p) => p.locationStatus === "confirmed" && Number.isFinite(p.latitude) && Number.isFinite(p.longitude);
+  const editStorageKey = "botanica-map-pin-drafts";
+  const readEditedPositions = () => {
+    if (!mapEdit) return {};
+    try {
+      const saved = JSON.parse(localStorage.getItem(editStorageKey) || "{}");
+      return Object.fromEntries(Object.entries(saved).filter(([id, pos]) =>
+        PROJECTS.some((p) => p.id === id) && Number.isFinite(pos?.latitude) && Number.isFinite(pos?.longitude)
+      ));
+    } catch { return {}; }
+  };
+  const editedPositions = readEditedPositions();
+  const editorMarkers = new Map();
+  let selectedEditProject = PROJECTS[0]?.id || "";
   const PROJECT_MAP_URLS = {
     "skyport": "https://www.google.com/maps/search/?api=1&query=Botanica+Skyport+Sakhu+Phuket",
     "grand-avenue": "https://www.google.com/maps/search/?api=1&query=Botanica+Grand+Avenue+Cherngtalay+Phuket",
@@ -244,6 +261,87 @@
     const spread = (index - (total - 1) / 2) * 0.002;
     return { lng: a.lng + spread, lat: a.lat + spread * 0.35 };
   };
+  function persistEditedPositions() {
+    try { localStorage.setItem(editStorageKey, JSON.stringify(editedPositions)); }
+    catch { $("map-editor-status").textContent = "Browser storage is unavailable. Copy your coordinates before leaving."; }
+  }
+  function renderMapEditor() {
+    if (!mapEdit) return;
+    const entries = PROJECTS.filter((p) => editedPositions[p.id]).map((p) => ({
+      id: p.id, name: p.name,
+      latitude: editedPositions[p.id].latitude,
+      longitude: editedPositions[p.id].longitude,
+    }));
+    $("map-editor-output").value = JSON.stringify(entries, null, 2);
+    $("map-editor-copy").disabled = entries.length === 0;
+    $("map-editor-reset").disabled = !editedPositions[selectedEditProject];
+    const pos = editorMarkers.get(selectedEditProject)?.getLngLat();
+    $("map-editor-position").textContent = pos
+      ? `Lat ${pos.lat.toFixed(6)} · Lng ${pos.lng.toFixed(6)} · ${entries.length} moved`
+      : `${entries.length} moved`;
+  }
+  function selectMapEditorProject(id, fly = false) {
+    if (!mapEdit || !editorMarkers.has(id)) return;
+    selectedEditProject = id;
+    $("map-editor-project").value = id;
+    editorMarkers.forEach((marker, projectId) =>
+      marker.getElement().querySelector(".area-pin")?.classList.toggle("active", projectId === id));
+    renderMapEditor();
+    if (fly) map.flyTo({ center: editorMarkers.get(id).getLngLat(), zoom: Math.max(map.getZoom(), 13) });
+  }
+  function enableEditorDrag(marker, project) {
+    const element = marker.getElement();
+    let drag = null;
+    element.addEventListener("mousedown", (event) => event.stopPropagation());
+    element.addEventListener("touchstart", (event) => event.stopPropagation(), { passive: true });
+    element.addEventListener("touchmove", (event) => event.stopPropagation(), { passive: true });
+    element.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 && event.pointerType === "mouse") return;
+      const start = map.project(marker.getLngLat());
+      drag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        mapX: start.x,
+        mapY: start.y,
+        moved: false,
+        panEnabled: map.dragPan.isEnabled(),
+      };
+      selectMapEditorProject(project.id);
+      if (drag.panEnabled) map.dragPan.disable();
+      element.setPointerCapture(event.pointerId);
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    element.addEventListener("pointermove", (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (Math.hypot(dx, dy) < 2 && !drag.moved) return;
+      drag.moved = true;
+      marker.setLngLat(map.unproject([drag.mapX + dx, drag.mapY + dy]));
+      renderMapEditor();
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    const finish = (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const moved = drag.moved;
+      if (drag.panEnabled) map.dragPan.enable();
+      drag = null;
+      if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
+      if (!moved) return;
+      const { lat, lng } = marker.getLngLat();
+      editedPositions[project.id] = { latitude: Number(lat.toFixed(6)), longitude: Number(lng.toFixed(6)) };
+      persistEditedPositions();
+      renderMapEditor();
+      $("map-editor-status").textContent = `${project.name} position saved in this browser.`;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    element.addEventListener("pointerup", finish);
+    element.addEventListener("pointercancel", finish);
+  }
   const mapsUrl = (p) => {
     const a = areaOf(p);
     const [lat, lng] = isExact(p) ? [p.latitude, p.longitude] : a ? [a.lat, a.lng] : [null, null];
@@ -303,7 +401,10 @@
     btn.className = "area-pin" + (active ? " active" : "");
     btn.setAttribute("aria-label", `${project.name} — ${area.name}`);
     btn.innerHTML = `<img src="assets/icons/botanica-touch.png" alt="" aria-hidden="true"><i>${esc(project.name)}</i>`;
-    btn.addEventListener("click", () => { state.project = project; state.area = area.id; renderCards(); renderMap(); setSheetMode("peek"); });
+    btn.addEventListener("click", () => {
+      if (mapEdit) return selectMapEditorProject(project.id);
+      state.project = project; state.area = area.id; renderCards(); renderMap(); setSheetMode("peek");
+    });
     wrap.appendChild(btn);
     return wrap;
   }
@@ -349,15 +450,28 @@
     }
     markers.forEach((m) => m.remove());
     markers = [];
+    editorMarkers.clear();
     const shown = AREAS.filter((a) => areaProjects(a).length);
     shown.forEach((a) => {
       areaProjects(a).forEach((project, index) => {
-        const el = makePin(project, a, state.project?.id === project.id);
-        const position = projectPosition(project, a, index, areaProjects(a).length);
-        markers.push(new maplibregl.Marker({ element: el }).setLngLat([position.lng, position.lat]).addTo(map));
+        const el = makePin(project, a, mapEdit ? selectedEditProject === project.id : state.project?.id === project.id);
+        const position = mapEdit && editedPositions[project.id]
+          ? { lng: editedPositions[project.id].longitude, lat: editedPositions[project.id].latitude }
+          : projectPosition(project, a, index, areaProjects(a).length);
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([position.lng, position.lat]).addTo(map);
+        markers.push(marker);
+        if (mapEdit) {
+          editorMarkers.set(project.id, marker);
+          enableEditorDrag(marker, project);
+        }
       });
     });
     map.resize();
+    if (mapEdit) {
+      renderMapEditor();
+      return;
+    }
     requestAnimationFrame(() => {
       const sheetH = ($("sheet").hidden ? 0 : $("sheet").offsetHeight) + 100;
       const target = state.area === "all" || state.area === "tbc" ? shown : shown.filter((a) => a.id === state.area);
@@ -758,6 +872,38 @@
       }
     }
   });
+  if (mapEdit) {
+    $("app").classList.add("map-edit");
+    $("map-editor").hidden = false;
+    $("map-editor-project").innerHTML = PROJECTS.map((p) =>
+      `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+    $("map-editor-project").addEventListener("change", (e) => selectMapEditorProject(e.target.value, true));
+    $("map-editor-reset").addEventListener("click", () => {
+      const p = PROJECTS.find((project) => project.id === selectedEditProject);
+      const a = p && areaOf(p);
+      const group = a && areaProjects(a);
+      if (!p || !group) return;
+      delete editedPositions[p.id];
+      persistEditedPositions();
+      const position = projectPosition(p, a, group.findIndex((project) => project.id === p.id), group.length);
+      editorMarkers.get(p.id)?.setLngLat([position.lng, position.lat]);
+      renderMapEditor();
+      $("map-editor-status").textContent = `${p.name} reset to its original approximate position.`;
+    });
+    $("map-editor-copy").addEventListener("click", async () => {
+      const output = $("map-editor-output");
+      try {
+        await navigator.clipboard.writeText(output.value);
+        $("map-editor-status").textContent = "Coordinates copied. Paste them into the chat.";
+      } catch {
+        output.focus();
+        output.select();
+        $("map-editor-status").textContent = "Text selected. Press Ctrl+C or Cmd+C, then paste it into the chat.";
+      }
+    });
+    renderMapEditor();
+  }
   applyTheme(state.theme);
   go("home", { focus: false });
+  if (mapEdit) go("map", { focus: false });
 })();

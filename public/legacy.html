@@ -466,13 +466,13 @@
           aria-labelledby="budget-title"
           hidden
         >
-          <h1 id="budget-title">Your Budget</h1>
-          <p class="subtitle">
-            Select a price range to view projects on the map
-          </p>
+          <div class="budget-intro">
+            <h1 id="budget-title">Your Budget</h1>
+            <p class="subtitle">
+              Select a price range to view projects on the map
+            </p>
+          </div>
           <div id="budgets" class="budgets"></div>
-          <h2 class="faq-title">FAQ</h2>
-          <div id="faq" class="faq"></div>
         </section>
         <section id="map" class="map-screen" aria-labelledby="map-title" hidden>
           <h1 id="map-title" class="sr-only">Where our projects are located</h1>
@@ -484,6 +484,19 @@
           <p id="map-empty" class="map-empty glass" hidden>
             No projects in this range yet. Please choose another budget.
           </p>
+          <aside id="map-editor" class="map-editor" aria-label="Map pin editor" hidden>
+            <strong>Place project pins</strong>
+            <p>Choose a project, drag its pin, then copy the coordinates.</p>
+            <label for="map-editor-project">Project</label>
+            <select id="map-editor-project"></select>
+            <output id="map-editor-position" aria-live="polite"></output>
+            <div class="map-editor-actions">
+              <button id="map-editor-reset" type="button">Reset selected</button>
+              <button id="map-editor-copy" type="button">Copy coordinates</button>
+            </div>
+            <textarea id="map-editor-output" rows="3" readonly aria-label="Edited project coordinates"></textarea>
+            <span id="map-editor-status" role="status"></span>
+          </aside>
         </section>
         <section
           id="contact"
@@ -518,6 +531,10 @@
             <p id="form-error" class="form-error" role="alert"></p>
             <div id="recap" class="recap"></div>
           </form>
+          <section class="contact-faq" aria-labelledby="faq-title">
+            <h2 id="faq-title" class="faq-title">FAQ</h2>
+            <div id="faq" class="faq"></div>
+          </section>
         </section>
         <section
           id="success"

@@ -51,18 +51,9 @@
             ></span>
           </button>
         </div>
-        <button
-          id="theme-toggle"
-          class="theme-toggle"
-          type="button"
-          aria-label="Switch to dark mode"
-        >
-          <span aria-hidden="true">◐</span><span id="theme-label">Dark</span>
-        </button>
       </header>
       <main id="main">
         <section id="home" class="photo-screen" aria-labelledby="home-title">
-          <div class="hero-slides" aria-label="Villa photos"></div>
           <div class="photo-overlay"></div>
           <div
             class="botanica-full"
@@ -434,28 +425,13 @@
           </div>
           <div class="home-content">
             <div class="hero-title">
-              <span class="hero-tag"
-                ><img
-                  src="assets/figma/f639c.svg"
-                  alt=""
-                  width="14"
-                  height="14"
-                />Find Your Villa in 3 Minutes</span
-              >
-              <h1 id="home-title">Buy a Botanica<br />Villa in Phuket</h1>
-            </div>
-            <div class="slider-controls">
-              <div
-                class="slider-dots"
-                role="group"
-                aria-label="Choose a villa photo"
-              ></div>
-              <span id="slide-count">01 / 03</span>
+              <h1 id="home-title">
+                <strong>Buy a Botanica<br />Villa</strong>
+              </h1>
             </div>
             <div class="glass hero-panel">
-              <div id="stats" class="stats"></div>
               <button id="start" class="button primary" type="button">
-                <span>Find Your Villa</span><span class="button-arrow"></span>
+                <span>Find Your Villa in 3 Minutes</span>
               </button>
             </div>
           </div>
@@ -466,13 +442,13 @@
           aria-labelledby="budget-title"
           hidden
         >
-          <h1 id="budget-title">Your Budget</h1>
-          <p class="subtitle">
-            Select a price range to view projects on the map
-          </p>
+          <div class="budget-intro">
+            <h1 id="budget-title">Your Budget</h1>
+            <p class="subtitle">
+              Select a price range to view projects on the map
+            </p>
+          </div>
           <div id="budgets" class="budgets"></div>
-          <h2 class="faq-title">FAQ</h2>
-          <div id="faq" class="faq"></div>
         </section>
         <section id="map" class="map-screen" aria-labelledby="map-title" hidden>
           <h1 id="map-title" class="sr-only">Where our projects are located</h1>
@@ -484,6 +460,19 @@
           <p id="map-empty" class="map-empty glass" hidden>
             No projects in this range yet. Please choose another budget.
           </p>
+          <aside id="map-editor" class="map-editor" aria-label="Map pin editor" hidden>
+            <strong>Place project pins</strong>
+            <p>Choose a project, drag its pin, then copy the coordinates.</p>
+            <label for="map-editor-project">Project</label>
+            <select id="map-editor-project"></select>
+            <output id="map-editor-position" aria-live="polite"></output>
+            <div class="map-editor-actions">
+              <button id="map-editor-reset" type="button">Reset selected</button>
+              <button id="map-editor-copy" type="button">Copy coordinates</button>
+            </div>
+            <textarea id="map-editor-output" rows="3" readonly aria-label="Edited project coordinates"></textarea>
+            <span id="map-editor-status" role="status"></span>
+          </aside>
         </section>
         <section
           id="contact"
@@ -518,6 +507,10 @@
             <p id="form-error" class="form-error" role="alert"></p>
             <div id="recap" class="recap"></div>
           </form>
+          <section class="contact-faq" aria-labelledby="faq-title">
+            <h2 id="faq-title" class="faq-title">FAQ</h2>
+            <div id="faq" class="faq"></div>
+          </section>
         </section>
         <section
           id="success"

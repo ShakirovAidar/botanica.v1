@@ -238,6 +238,32 @@ img {
   padding: calc(112px + env(safe-area-inset-top, 0px)) 16px 100px;
   scrollbar-width: thin;
 }
+#budget {
+  display: flex;
+  flex-direction: column;
+  --budget-photo-size: clamp(100px, min(36vw, calc((100dvh - 350px) / 3)), 140px);
+  background: url("img/botanica-budget-sunset-v2.png") center / cover no-repeat;
+}
+[data-theme="dark"] #budget {
+  background-image: linear-gradient(rgba(0, 15, 30, 0.12), rgba(0, 15, 30, 0.18)), url("img/botanica-budget-sunset-v2.png");
+}
+#app[data-screen="budget"] .brand {
+  padding: 0;
+  background: transparent;
+}
+#app[data-screen="budget"] .brand-mark {
+  background: #fff;
+  filter: drop-shadow(0 0 1px #f3cf79) drop-shadow(0 0 2px #c48b3d) drop-shadow(0 2px 4px rgba(0, 22, 44, 0.9));
+}
+.budget-intro {
+  color: #fff;
+}
+.budget-intro h1 {
+  color: #fff;
+}
+#budget .subtitle {
+  color: #fff;
+}
 
 /* The final contact step should scroll as one document; keep its header in flow. */
 #app[data-screen="contact"] .header {
@@ -250,6 +276,7 @@ img {
 }
 #app[data-screen="contact"] .content-screen {
   padding-top: 12px;
+  padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px));
 }
 .subtitle {
   color: var(--muted);
@@ -261,36 +288,43 @@ img {
 .budgets {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  flex: 1;
+  gap: 12px;
   margin-top: 16px;
+  min-height: calc(var(--budget-photo-size) + var(--budget-photo-size) + var(--budget-photo-size) + 72px);
+  max-height: 624px;
 }
 .budget-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex: 1 1 0;
+  gap: 10px;
   width: 100%;
   text-align: left;
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.78);
   border: 1.5px solid transparent;
-  border-radius: 24px;
-  padding: 8px 12px;
-  min-height: 56px;
+  border-radius: 20px;
+  padding: 8px;
+  min-height: calc(var(--budget-photo-size) + 16px);
+  max-height: 200px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+[data-theme="dark"] .budget-option {
+  background: rgba(10, 34, 56, 0.82);
 }
 .budget-option[aria-pressed="true"],
 .budget-option:hover {
   border-color: var(--accent);
 }
-.budget-icon {
-  display: grid;
-  place-items: center;
+.budget-photo {
+  display: block;
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: var(--budget-photo-size);
+  height: var(--budget-photo-size);
+  object-fit: cover;
   background: var(--subtle);
-  border-radius: 50%;
-}
-.budget-option[aria-pressed="true"] .budget-icon {
-  background: var(--accent);
+  border-radius: 14px;
 }
 .budget-copy {
   flex: 1;
@@ -302,12 +336,24 @@ img {
   line-height: 18px;
   font-weight: 700;
 }
+.budget-price {
+  display: block;
+  font-size: 13px;
+  line-height: 17px;
+  margin-top: 4px;
+}
+.budget-map-hint {
+  display: block;
+  font-size: 11px;
+  line-height: 14px;
+  margin-top: 6px;
+}
 .budget-copy small {
   display: block;
   font-size: 12px;
   line-height: 16px;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .budget-arrow {
   display: grid;
@@ -315,11 +361,25 @@ img {
   width: 32px;
   height: 32px;
   flex: none;
+  align-self: flex-start;
   border-radius: 50%;
   background: var(--active);
+  color: var(--on-active);
+}
+.budget-arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .faq-title {
   margin: 30px 0 16px;
+}
+.contact-faq {
+  margin-top: 8px;
 }
 .faq {
   display: flex;
@@ -482,11 +542,12 @@ img {
   background: #fff;
 }
 .hero-panel {
-  background: var(--photo-glass);
-  border-color: var(--photo-line);
-  border-radius: 24px;
-  padding: 16px;
-  backdrop-filter: blur(16px);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 .stats {
   display: flex;
@@ -1457,6 +1518,72 @@ dialog::backdrop {
 .map-status[hidden] { display:none; }
 .area-pin:focus-visible { outline:3px solid #4a91e2; outline-offset:2px; }
 
+/* Optional pin placement mode: ?mapEdit=1 */
+#app.map-edit[data-screen="map"] #footer,
+#app.map-edit[data-screen="map"] #sheet,
+#app.map-edit[data-screen="map"] .area-chips {
+  display: none !important;
+}
+.map-edit .maplibregl-marker,
+.map-edit .area-pin { cursor: grab; touch-action: none; }
+.map-edit .area-pin:active { cursor: grabbing; }
+.map-edit .area-pin.active i,
+.map-edit .area-pin:hover i,
+.map-edit .area-pin:focus-visible i {
+  display: block;
+  position: absolute;
+  left: 30px;
+  top: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #001e3a;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  pointer-events: none;
+}
+.map-editor {
+  position: absolute;
+  z-index: 45;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  gap: 7px;
+  max-height: 48dvh;
+  overflow-y: auto;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 12px 36px rgba(0, 20, 40, 0.28);
+}
+.map-editor > strong { font-size: 16px; }
+.map-editor p, .map-editor label, .map-editor output, .map-editor-status { font-size: 12px; line-height: 1.4; }
+.map-editor select, .map-editor textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink);
+  font: inherit;
+}
+.map-editor textarea { resize: vertical; user-select: text; -webkit-user-select: text; }
+.map-editor-actions { display: flex; gap: 8px; }
+.map-editor-actions button {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink);
+}
+.map-editor-actions #map-editor-copy { background: var(--active); color: var(--on-active); }
+#map-editor-status { min-height: 16px; }
+
 
 /* Original Figma dark-mode surfaces. Keep the interaction model unchanged. */
 [data-theme="dark"] #app[data-screen="home"] .hero-tag,
@@ -1473,7 +1600,7 @@ dialog::backdrop {
   color: #f7f7f5;
 }
 [data-theme="dark"] #app[data-screen="home"] .hero-panel {
-  background: rgba(10, 34, 56, 0.52);
+  background: transparent !important;
 }
 [data-theme="dark"] #app[data-screen="home"] .stats {
   color: #f7f7f5;

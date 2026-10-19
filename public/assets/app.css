@@ -206,13 +206,6 @@ img {
 .theme-toggle > span:first-child {
   font-size: 18px;
 }
-#app[data-screen="home"] .theme-toggle,
-#app[data-screen="success"] .theme-toggle {
-  color: #fff;
-  background: var(--photo-glass);
-  border-color: var(--photo-line);
-  backdrop-filter: blur(10px);
-}
 [data-theme="dark"] .brand-mark {
   background: var(--accent);
   width: 48px;
@@ -238,6 +231,32 @@ img {
   padding: calc(112px + env(safe-area-inset-top, 0px)) 16px 100px;
   scrollbar-width: thin;
 }
+#budget {
+  display: flex;
+  flex-direction: column;
+  --budget-photo-size: clamp(100px, min(36vw, calc((100dvh - 350px) / 3)), 140px);
+  background: url("img/botanica-budget-sunset-v2.png") center / cover no-repeat;
+}
+[data-theme="dark"] #budget {
+  background-image: linear-gradient(rgba(0, 15, 30, 0.12), rgba(0, 15, 30, 0.18)), url("img/botanica-budget-sunset-v2.png");
+}
+#app[data-screen="budget"] .brand {
+  padding: 0;
+  background: transparent;
+}
+#app[data-screen="budget"] .brand-mark {
+  background: #fff;
+  filter: drop-shadow(0 0 1px #f3cf79) drop-shadow(0 0 2px #c48b3d) drop-shadow(0 2px 4px rgba(0, 22, 44, 0.9));
+}
+.budget-intro {
+  color: #fff;
+}
+.budget-intro h1 {
+  color: #fff;
+}
+#budget .subtitle {
+  color: #fff;
+}
 
 /* The final contact step should scroll as one document; keep its header in flow. */
 #app[data-screen="contact"] .header {
@@ -250,6 +269,7 @@ img {
 }
 #app[data-screen="contact"] .content-screen {
   padding-top: 12px;
+  padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px));
 }
 .subtitle {
   color: var(--muted);
@@ -261,36 +281,43 @@ img {
 .budgets {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  flex: 1;
+  gap: 12px;
   margin-top: 16px;
+  min-height: calc(var(--budget-photo-size) + var(--budget-photo-size) + var(--budget-photo-size) + 72px);
+  max-height: 624px;
 }
 .budget-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex: 1 1 0;
+  gap: 10px;
   width: 100%;
   text-align: left;
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.78);
   border: 1.5px solid transparent;
-  border-radius: 24px;
-  padding: 8px 12px;
-  min-height: 56px;
+  border-radius: 20px;
+  padding: 8px;
+  min-height: calc(var(--budget-photo-size) + 16px);
+  max-height: 200px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+[data-theme="dark"] .budget-option {
+  background: rgba(10, 34, 56, 0.82);
 }
 .budget-option[aria-pressed="true"],
 .budget-option:hover {
   border-color: var(--accent);
 }
-.budget-icon {
-  display: grid;
-  place-items: center;
+.budget-photo {
+  display: block;
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: var(--budget-photo-size);
+  height: var(--budget-photo-size);
+  object-fit: cover;
   background: var(--subtle);
-  border-radius: 50%;
-}
-.budget-option[aria-pressed="true"] .budget-icon {
-  background: var(--accent);
+  border-radius: 14px;
 }
 .budget-copy {
   flex: 1;
@@ -302,12 +329,24 @@ img {
   line-height: 18px;
   font-weight: 700;
 }
+.budget-price {
+  display: block;
+  font-size: 13px;
+  line-height: 17px;
+  margin-top: 4px;
+}
+.budget-map-hint {
+  display: block;
+  font-size: 11px;
+  line-height: 14px;
+  margin-top: 6px;
+}
 .budget-copy small {
   display: block;
   font-size: 12px;
   line-height: 16px;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .budget-arrow {
   display: grid;
@@ -315,11 +354,25 @@ img {
   width: 32px;
   height: 32px;
   flex: none;
+  align-self: flex-start;
   border-radius: 50%;
   background: var(--active);
+  color: var(--on-active);
+}
+.budget-arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .faq-title {
   margin: 30px 0 16px;
+}
+.contact-faq {
+  margin-top: 8px;
 }
 .faq {
   display: flex;
@@ -374,11 +427,10 @@ img {
   position: relative;
   height: 100%;
   overflow-y: auto;
-  background: #001e3a;
+  background: #001e3a url("img/botanica-hero-clean.png") center 52% / cover no-repeat;
   color: #fff;
   isolation: isolate;
 }
-.hero-slides,
 .photo-overlay,
 .success-photo {
   position: absolute;
@@ -387,32 +439,14 @@ img {
   height: 100%;
   z-index: -2;
 }
-.hero-slides {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  touch-action: pan-x;
-}
-.hero-slides::-webkit-scrollbar {
-  display: none;
-}
-.hero-slides img {
-  flex: 0 0 100%;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  scroll-snap-align: start;
-}
 .photo-overlay {
   z-index: -1;
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(11, 27, 50, 0.45),
-    rgba(11, 27, 50, 0) 22%,
-    rgba(11, 27, 50, 0.05) 45%,
-    rgba(11, 27, 50, 0.8)
+    rgba(11, 27, 50, 0.22),
+    rgba(11, 27, 50, 0) 24%,
+    rgba(11, 27, 50, 0) 100%
   );
 }
 .home-content {
@@ -420,14 +454,18 @@ img {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 130px 16px calc(42px + env(safe-area-inset-bottom, 0px));
+  padding: 130px 16px calc(24px + env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
 .home-content button {
   pointer-events: auto;
 }
 .hero-title {
-  margin-bottom: 20px;
+  position: absolute;
+  top: clamp(190px, 27vh, 340px);
+  left: 16px;
+  right: 16px;
+  margin-bottom: 0;
 }
 .hero-tag {
   display: inline-flex;
@@ -442,82 +480,59 @@ img {
   line-height: 16px;
 }
 .hero-title h1 {
-  font-size: 40px;
-  line-height: 44px;
-  letter-spacing: -0.03em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
   margin-top: 16px;
-  max-width: 360px;
+  text-align: center;
+  color: #fff;
+  letter-spacing: 0;
 }
-.slider-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-  height: 18px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
+.hero-kicker,
+.hero-subtitle {
+  color: #fff;
+  font-size: clamp(13px, 2.4vw, 18px);
+  line-height: 1.25;
+  font-weight: 500;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.15);
 }
-.slider-dots {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.slider-dots button {
-  position: relative;
-  width: 8px;
-  height: 4px;
-  border: 0;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  transition: width 0.2s;
-}
-.slider-dots button::after {
-  content: "";
-  position: absolute;
-  inset: -18px 0;
-}
-.slider-dots button[aria-pressed="true"] {
-  width: 24px;
-  background: #fff;
+.hero-title h1 strong {
+  display: block;
+  max-width: 520px;
+  font-size: clamp(42px, 7vw, 68px) !important;
+  line-height: 0.92;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #f5d895;
+  background: linear-gradient(180deg, rgba(255, 236, 185, 0.98), rgba(229, 177, 91, 0.96));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.5px rgba(27, 49, 64, 0.38);
+  filter: drop-shadow(0 5px 12px rgba(6, 22, 39, 0.62));
 }
 .hero-panel {
-  background: var(--photo-glass);
-  border-color: var(--photo-line);
-  border-radius: 24px;
-  padding: 16px;
-  backdrop-filter: blur(16px);
-}
-.stats {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   display: flex;
-  margin-bottom: 16px;
-  background: transparent;
-  border: 0;
+  justify-content: center;
 }
-.stats > div {
-  flex: 1;
-  min-width: 0;
-  padding: 0 12px;
-  border-left: 1px solid rgba(255, 255, 255, 0.32);
-}
-.stats > div:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-.stats strong {
-  display: block;
-  font-size: 18px;
-  line-height: 24px;
+#start {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 12px 24px;
+  justify-content: center;
+  text-align: center;
   font-weight: 500;
-  letter-spacing: -0.02em;
-}
-.stats small {
-  display: block;
-  font-size: 12px;
-  line-height: 16px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 4px;
-  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(120deg, #f7dc82 0%, #dfb466 48%, #b66f4d 100%);
 }
 .button {
   display: flex;
@@ -545,7 +560,7 @@ img {
   transform: translateY(1px);
 }
 .primary {
-  background: var(--accent);
+  background: linear-gradient(120deg, #f7dc82 0%, #dfb466 48%, #b66f4d 100%);
   color: #001e3a;
 }
 .button-arrow {
@@ -583,7 +598,11 @@ img {
   width: 100px;
   height: 110px;
   transform: translateX(-50%);
-  color: #2f5070;
+  color: #f4cc77;
+  filter: drop-shadow(0 0 1px rgba(27, 49, 64, 0.48)) drop-shadow(0 2px 5px rgba(6, 24, 44, 0.6));
+}
+.botanica-full img {
+  filter: brightness(0) saturate(100%) invert(86%) sepia(28%) saturate(797%) hue-rotate(337deg) brightness(101%) contrast(92%);
 }
 .botanica-full span {
   position: absolute;
@@ -1376,9 +1395,6 @@ dialog::backdrop {
   .hero-title {
     margin-bottom: 12px;
   }
-  .slider-controls {
-    margin-bottom: 12px;
-  }
   .botanica-full {
     top: 24px;
   }
@@ -1457,6 +1473,72 @@ dialog::backdrop {
 .map-status[hidden] { display:none; }
 .area-pin:focus-visible { outline:3px solid #4a91e2; outline-offset:2px; }
 
+/* Optional pin placement mode: ?mapEdit=1 */
+#app.map-edit[data-screen="map"] #footer,
+#app.map-edit[data-screen="map"] #sheet,
+#app.map-edit[data-screen="map"] .area-chips {
+  display: none !important;
+}
+.map-edit .maplibregl-marker,
+.map-edit .area-pin { cursor: grab; touch-action: none; }
+.map-edit .area-pin:active { cursor: grabbing; }
+.map-edit .area-pin.active i,
+.map-edit .area-pin:hover i,
+.map-edit .area-pin:focus-visible i {
+  display: block;
+  position: absolute;
+  left: 30px;
+  top: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #001e3a;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  pointer-events: none;
+}
+.map-editor {
+  position: absolute;
+  z-index: 45;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  gap: 7px;
+  max-height: 48dvh;
+  overflow-y: auto;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 12px 36px rgba(0, 20, 40, 0.28);
+}
+.map-editor > strong { font-size: 16px; }
+.map-editor p, .map-editor label, .map-editor output, .map-editor-status { font-size: 12px; line-height: 1.4; }
+.map-editor select, .map-editor textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink);
+  font: inherit;
+}
+.map-editor textarea { resize: vertical; user-select: text; -webkit-user-select: text; }
+.map-editor-actions { display: flex; gap: 8px; }
+.map-editor-actions button {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink);
+}
+.map-editor-actions #map-editor-copy { background: var(--active); color: var(--on-active); }
+#map-editor-status { min-height: 16px; }
+
 
 /* Original Figma dark-mode surfaces. Keep the interaction model unchanged. */
 [data-theme="dark"] #app[data-screen="home"] .hero-tag,
@@ -1473,7 +1555,7 @@ dialog::backdrop {
   color: #f7f7f5;
 }
 [data-theme="dark"] #app[data-screen="home"] .hero-panel {
-  background: rgba(10, 34, 56, 0.52);
+  background: transparent !important;
 }
 [data-theme="dark"] #app[data-screen="home"] .stats {
   color: #f7f7f5;

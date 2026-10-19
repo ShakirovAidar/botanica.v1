@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
-// "/" is served as a static asset (public/index.html) by Cloudflare's assets layer,
-// so no rewrite is needed.
-const nextConfig: NextConfig = {};
+// Keep Next's workspace root anchored to this app. A parent-level lockfile can
+// otherwise make local dev resolve the wrong project and return 404 for `/`.
+const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
+};
 
 export default nextConfig;
